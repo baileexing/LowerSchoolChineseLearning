@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>小学汉字听写通</title>
+<meta name="theme-color" content="#F8F3EA">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --paper:#F8F3EA;
+  --paper2:#EFE7DA;
+  --card:#FFFDF8;
+  --card2:#F7F1E7;
+  --sage:#7D9B7A;
+  --sage2:#E8EFE4;
+  --blue:#7897A8;
+  --blue2:#E8F0F3;
+  --clay:#B8816D;
+  --clay2:#F4E8E2;
+  --sand:#B89A68;
+  --sand2:#F3EBD9;
+  --ink:#3E3931;
+  --muted:#6F675C;
+  --soft:#9D9285;
+  --line:#DDD1C1;
+  --white:#FFFFFF;
+  --shadow:0 10px 24px rgba(84,72,56,.10);
+  --radius:20px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;-webkit-text-size-adjust:100%;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+#app{max-width:1440px;margin:0 auto;padding:14px 14px calc(24px + env(safe-area-inset-bottom))}
+.header{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line);padding:14px 14px 12px;margin:0 -14px 14px}
+.header-inner{max-width:1440px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand-title{font-size:22px;font-weight:800;letter-spacing:.3px;color:var(--ink)}
+.brand-sub{font-size:13px;color:var(--muted);margin-top:2px;font-weight:600}
+.badge{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 11px;font-size:13px;color:var(--muted);font-weight:700;white-space:nowrap}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+.section-title{font-size:15px;font-weight:850;color:var(--ink);margin-bottom:10px}
+.note{font-size:13px;color:var(--muted);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+@media(max-width:520px){.grid{grid-template-columns:repeat(2,1fr)}.brand-title{font-size:20px}}
+.tab{min-height:48px;border:1px solid var(--line);border-radius:15px;background:var(--card);font-size:16px;font-weight:800;color:var(--ink);box-shadow:0 4px 10px rgba(84,72,56,.05)}
+.tab.sel{background:var(--sage2);border-color:var(--sage);color:#405D3F}
+.tab:active,.action:active,.row:active,.small:active{transform:scale(.985)}
+.action{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;min-height:64px;border:1px solid var(--line);border-radius:18px;background:var(--card);padding:14px 15px;box-shadow:0 4px 12px rgba(84,72,56,.06);margin-bottom:10px}
+.action.primary{background:var(--sage2);border-color:var(--sage)}
+.action.blue{background:var(--blue2);border-color:var(--blue)}
+.action.clay{background:var(--clay2);border-color:var(--clay)}
+.action-title{font-size:17px;font-weight:900;color:var(--ink)}
+.action-meta{font-size:13px;color:var(--muted);margin-top:3px;font-weight:700}
+.arrow{flex:0 0 auto;color:var(--muted);font-weight:900;font-size:14px}
+.lesson-list{display:flex;flex-direction:column;gap:9px}
+.row{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:16px;background:var(--card);padding:12px 13px;min-height:62px;box-shadow:0 3px 9px rgba(84,72,56,.04)}
+.row-main{flex:1;min-width:0}
+.row-title{font-size:16px;font-weight:850;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-meta{font-size:13px;color:var(--muted);font-weight:700;margin-top:3px}
+.progress-wrap{width:72px;height:8px;background:var(--paper2);border-radius:20px;overflow:hidden;flex:0 0 auto;border:1px solid rgba(140,126,108,.12)}
+.progress-fill{height:100%;width:0;background:var(--sage);border-radius:20px}
+.pct{font-size:12px;color:var(--muted);font-weight:850;width:38px;text-align:right;flex:0 0 auto}
+.small-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.small{border:1px solid var(--line);border-radius:999px;background:var(--card);padding:9px 12px;font-size:13px;font-weight:800;color:var(--ink)}
+.small.danger{color:#835249;background:var(--clay2);border-color:var(--clay)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:center}
+.stat-n{font-size:24px;font-weight:900;color:var(--ink)}
+.stat-l{font-size:12px;color:var(--muted);font-weight:800;margin-top:2px}
+.breadcrumb{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:10px}
+.practice-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.navbtn{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:10px 12px;font-size:14px;font-weight:850;color:var(--ink)}
+.counter{font-size:14px;color:var(--muted);font-weight:900;text-align:center;flex:1}
+.bar{height:9px;background:var(--paper2);border:1px solid var(--line);border-radius:20px;overflow:hidden;margin-bottom:14px}
+.bar>div{height:100%;background:var(--sage);border-radius:20px;width:0}
+.listen-card{text-align:center;padding:20px}
+.prompt-title{font-size:15px;color:var(--muted);font-weight:850;margin-bottom:12px}
+.listen-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;border-radius:999px;background:var(--blue2);border:1px solid var(--blue);color:#405D69;padding:0 22px;font-size:18px;font-weight:900}
+.hidden-char{font-size:52px;line-height:1;color:var(--soft);font-weight:900;margin:12px 0 4px;letter-spacing:4px}
+.canvas-card{padding:14px}
+.canvas-note{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:10px}
+canvas{display:block;margin:0 auto;border-radius:16px;border:1px solid var(--line);background:var(--white);touch-action:none}
+.canvas-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
+.tool-text{font-size:13px;color:var(--muted);font-weight:800}
+.primary-btn{width:100%;min-height:54px;border-radius:16px;background:var(--sage);color:#FAFFF8;font-size:18px;font-weight:900;box-shadow:0 6px 14px rgba(92,122,87,.18)}
+.secondary-btn{width:100%;min-height:52px;border-radius:16px;background:var(--card);border:1px solid var(--line);color:var(--ink);font-size:16px;font-weight:850;margin-top:10px}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.box{border:1px solid var(--line);border-radius:18px;background:var(--card);padding:14px;text-align:center;min-height:180px;display:flex;flex-direction:column;justify-content:center}
+.box-label{font-size:13px;color:var(--muted);font-weight:850;margin-bottom:8px}
+.standard{font-size:96px;line-height:1.05;font-family:"KaiTi","STKaiti","Songti SC",serif;color:var(--ink)}
+.judges{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.judge{border-radius:18px;min-height:72px;font-size:18px;font-weight:900;border:1px solid var(--line)}
+.judge.ok{background:var(--sage2);border-color:var(--sage);color:#405D3F}
+.judge.bad{background:var(--blue2);border-color:var(--blue);color:#405D69}
+.finish-title{font-size:28px;font-weight:950;color:var(--ink);margin-bottom:8px;text-align:center}
+.finish-sub{font-size:15px;color:var(--muted);font-weight:700;text-align:center;margin-bottom:14px}
+.warn{background:var(--sand2);border-color:var(--sand);color:#6D5638}
+.footer-note{font-size:12px;color:var(--soft);font-weight:700;text-align:center;margin:14px 0 4px}
+
+.reward-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.coin-pill{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--sand);background:var(--sand2);color:#6D5638;border-radius:999px;padding:9px 13px;font-size:15px;font-weight:950;white-space:nowrap}
+.reward-copy{font-size:13px;color:var(--muted);font-weight:750;line-height:1.55;margin-bottom:12px}
+.reward-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.reward-actions{grid-template-columns:1fr}}
+.reward-btn{min-height:52px;border-radius:16px;border:1px solid var(--line);background:var(--card2);font-size:16px;font-weight:900;color:var(--ink);padding:10px 12px;text-align:center}
+.reward-btn.sage{background:var(--sage2);border-color:var(--sage);color:#405D3F}
+.reward-btn.blue{background:var(--blue2);border-color:var(--blue);color:#405D69}
+.shop-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media(max-width:1050px){.shop-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:760px){.shop-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.shop-grid{grid-template-columns:repeat(2,1fr)}}
+.sticker-card{border:1px solid var(--line);border-radius:18px;background:var(--card);padding:14px;text-align:center;box-shadow:0 4px 10px rgba(84,72,56,.05)}
+.sticker-emoji{font-size:46px;line-height:1;margin-bottom:8px}
+.sticker-name{font-size:15px;font-weight:900;color:var(--ink);margin-bottom:5px}
+.sticker-meta{font-size:12px;color:var(--muted);font-weight:800;margin-bottom:10px}
+.buy-btn{width:100%;min-height:42px;border-radius:14px;background:var(--sage2);border:1px solid var(--sage);color:#405D3F;font-size:14px;font-weight:900}
+.buy-btn:disabled{opacity:.55;background:var(--card2);border-color:var(--line);color:var(--soft);cursor:not-allowed}
+.album-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+@media(max-width:520px){.album-grid{grid-template-columns:repeat(3,1fr)}}
+.album-slot{min-height:84px;border:1px dashed var(--line);border-radius:18px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:42px}
+.album-slot.filled{border-style:solid;background:var(--card);box-shadow:0 3px 8px rgba(84,72,56,.05)}
+.inventory-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+@media(max-width:520px){.inventory-list{grid-template-columns:1fr}}
+.inventory-item{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.inventory-main{display:flex;align-items:center;gap:10px;font-weight:900;color:var(--ink)}
+.inventory-emoji{font-size:32px;line-height:1}
+.place-btn{border:1px solid var(--blue);background:var(--blue2);color:#405D69;border-radius:999px;padding:8px 11px;font-size:13px;font-weight:900;white-space:nowrap}
+.empty-state{border:1px dashed var(--line);background:var(--card2);border-radius:18px;padding:18px;text-align:center;color:var(--muted);font-size:14px;font-weight:800;line-height:1.6}
+
+
+.album-page-tabs{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:12px;
+}
+.album-page-tab{
+  min-height:42px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--ink);
+  font-size:14px;
+  font-weight:900;
+}
+.album-page-tab.sel{
+  border-color:var(--blue);
+  background:var(--blue2);
+  color:#2C5F88;
+}
+.album-board.page-0{
+  background:
+    radial-gradient(circle at 18px 18px, rgba(216,178,86,.13) 0 2px, transparent 3px),
+    radial-gradient(circle at 54px 54px, rgba(108,167,217,.12) 0 2px, transparent 3px),
+    #FFF6E7;
+}
+.album-board.page-1{
+  background:
+    radial-gradient(circle at 18px 18px, rgba(116,179,126,.15) 0 2px, transparent 3px),
+    radial-gradient(circle at 54px 54px, rgba(226,146,122,.11) 0 2px, transparent 3px),
+    #ECF8F0;
+}
+.album-board.page-2{
+  background:
+    radial-gradient(circle at 18px 18px, rgba(108,167,217,.14) 0 2px, transparent 3px),
+    radial-gradient(circle at 54px 54px, rgba(216,178,86,.10) 0 2px, transparent 3px),
+    #EEF6FF;
+}
+.album-board.ready{
+  border-color:var(--sage);
+  cursor:crosshair;
+}
+.album-board.remove-ready{
+  border-color:var(--clay);
+}
+.album-tools{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+.album-tool-btn{
+  min-height:42px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:var(--card);
+  font-size:14px;
+  font-weight:900;
+}
+.album-tool-btn.on{
+  border-color:var(--clay);
+  background:var(--clay2);
+  color:#B05B4A;
+}
+.remove-hint{
+  margin-top:8px;
+  padding:9px 11px;
+  border-radius:14px;
+  background:var(--clay2);
+  border:1px solid var(--clay);
+  color:#B05B4A;
+  font-size:13px;
+  font-weight:850;
+  line-height:1.45;
+}
+
+@media(max-width:900px){.album-board{min-height:860px}}
+@media(max-width:520px){.album-board{min-height:720px}}
+
+/* Sticker book redesign */
+.stickerbook-shell{max-width:1160px;margin:0 auto;padding:8px 8px 24px;background:#FFFDFC}
+.stickerbook-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.stickerbook-back,.stickerbook-shop{border:1px solid #E5DDE9;background:#FFFFFF;border-radius:999px;padding:10px 16px;font-size:15px;font-weight:900;color:#685C77;box-shadow:0 4px 12px rgba(122,101,145,.08)}
+.stickerbook-coin{display:inline-flex;align-items:center;gap:8px;background:#FFD966;color:#7A5D00;border:1px solid #F4C72A;border-radius:999px;padding:10px 16px;font-size:15px;font-weight:950;box-shadow:0 6px 14px rgba(244,199,42,.25)}
+.stickerbook-header{text-align:center;margin:6px 0 14px}
+.stickerbook-title{font-size:44px;line-height:1.05;font-weight:1000;letter-spacing:.5px;color:#8A55C9;text-shadow:3px 3px 0 rgba(153,216,255,.95),0 0 18px rgba(204,176,255,.30)}
+.stickerbook-subtitle{margin-top:8px;font-size:16px;color:#6F6B7D;font-weight:800}
+.stickerbook-pager{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.stickerbook-pagepill{border:1px solid #DED7EB;background:#FFFFFF;color:#66607A;border-radius:999px;padding:10px 16px;font-size:14px;font-weight:900;box-shadow:0 4px 10px rgba(122,101,145,.06)}
+.stickerbook-pagepill.sel{background:#F0EAFF;border-color:#BCA9F4;color:#6A49C8}
+.stickerbook-frame{max-width:1080px;margin:0 auto 14px}
+.album-board{position:relative;min-height:1050px;border:3px solid #D9C9FF;border-radius:28px;overflow:hidden;box-shadow:0 16px 34px rgba(126,98,170,.14), inset 0 0 0 1px rgba(255,255,255,.55)}
+.album-board.page-0{background:linear-gradient(180deg,#EEF3FF 0%,#E5ECFF 100%)}
+.album-board.page-1{background:linear-gradient(180deg,#ECFAF0 0%,#DFF3E6 100%)}
+.album-board.page-2{background:linear-gradient(180deg,#FFF7D9 0%,#FFEFC0 100%)}
+.album-board::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.65) 1.1px, transparent 1.1px);background-size:22px 22px;opacity:.45;pointer-events:none}
+.album-board.ready{border-color:#99B6FF;box-shadow:0 16px 34px rgba(126,98,170,.16),0 0 0 5px rgba(170,197,255,.18)}
+.album-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#7E7490;font-size:17px;font-weight:900;text-align:center;line-height:1.6;padding:0 20px;pointer-events:none;max-width:90%}
+.stickerbook-help{text-align:center;color:#6D6980;font-size:14px;font-weight:850;margin:10px 0 18px;line-height:1.55}
+.sticker-storage{max-width:1080px;margin:0 auto;background:#FFFFFF;border:1px solid #E7E0EF;border-radius:28px;box-shadow:0 10px 24px rgba(122,101,145,.08);padding:18px}
+.sticker-storage-title{font-size:26px;font-weight:1000;color:#7D56C7;text-align:center;margin-bottom:6px}
+.sticker-storage-note{font-size:14px;color:#6F6B7D;font-weight:800;text-align:center;line-height:1.55;margin-bottom:14px}
+.sticker-storage-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+@media(max-width:1100px){.sticker-storage-grid{grid-template-columns:repeat(5,1fr)}}
+@media(max-width:860px){.album-board{min-height:780px}.sticker-storage-grid{grid-template-columns:repeat(4,1fr)}.stickerbook-title{font-size:38px}}
+@media(max-width:620px){.album-board{min-height:620px}.sticker-storage-grid{grid-template-columns:repeat(3,1fr)}.stickerbook-topbar{gap:8px}.stickerbook-back,.stickerbook-shop,.stickerbook-coin{padding:9px 12px;font-size:13px}.stickerbook-title{font-size:32px}}
+.sticker-storage-item{border:1px solid #E5DDF0;border-radius:18px;background:#FBF9FF;padding:10px 8px;text-align:center;display:flex;flex-direction:column;justify-content:space-between;min-height:118px;box-shadow:0 4px 10px rgba(122,101,145,.05)}
+.sticker-storage-item.sel{border-color:#A1B7FF;background:#EEF3FF}
+.sticker-storage-emoji{font-size:38px;line-height:1;margin:4px 0 8px}
+.sticker-storage-name{font-size:13px;font-weight:900;color:#5A556A;line-height:1.35;min-height:34px}
+.sticker-storage-count{font-size:12px;color:#827C91;font-weight:850;margin:6px 0 8px}
+.sticker-storage-btn{border:1px solid #B7C8FF;background:#EDF3FF;color:#4667B6;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900}
+.sticker-storage-btn.sel{background:#7B9EFF;color:#FFF;border-color:#7B9EFF}
+.placed-sticker-wrap{position:absolute;transform:translate(-50%,-50%);user-select:none;touch-action:none;cursor:grab;z-index:2}
+.placed-sticker-wrap:active{cursor:grabbing}
+.placed-sticker-face{font-size:64px;line-height:1;filter:drop-shadow(0 7px 9px rgba(108,94,128,.16));display:block}
+.placed-sticker-wrap.active .placed-sticker-face{transform:scale(1.08)}
+.sticker-remove-btn{position:absolute;right:-12px;top:-12px;width:28px;height:28px;border-radius:999px;background:#FF5B64;color:#FFF;border:2px solid #FFF;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:1000;box-shadow:0 8px 16px rgba(255,91,100,.35)}
+.sticker-remove-btn:hover{background:#F2424C}
+
+</style>
+</head>
+<body>
+<header class="header"><div class="header-inner"><div><div class="brand-title">小学汉字听写通</div><div class="brand-sub">按年级 · 册次 · 课次练习写字表</div></div><div class="badge">2500 字</div></div></header>
+<main id="app"></main>
+<script>
+const DATA=[{"key":"1年级","label":"一年级","vols":[{"label":"上册","lessons":[{"name":"识字2","chars":["一","二","三","上"]},{"name":"识字3","chars":["口","耳","目","手"]},{"name":"识字4","chars":["日","火","田","禾"]},{"name":"语文园地1","chars":["六","七","八","十"]},{"name":"语文园地2","chars":["九","王"]},{"name":"语文园地3","chars":["午","下"]},{"name":"语文园地4","chars":["去","年"]},{"name":"阅读1","chars":["了","子","大","人"]},{"name":"阅读2","chars":["可","叶","东","西"]},{"name":"阅读3","chars":["竹","马","牙","用","几"]},{"name":"阅读4","chars":["四","小","鸟","是","天"]},{"name":"语文园地5","chars":["女","开","关","先"]},{"name":"识字5","chars":["云","雨","虫","山","水"]},{"name":"识字6","chars":["力","男","土","木","心"]},{"name":"识字7","chars":["尺","本","刀","不","少"]},{"name":"识字8","chars":["中","五","风","立","正"]},{"name":"语文园地6","chars":["工","厂","门","卫"]},{"name":"阅读5","chars":["月","儿","头","里","见"]},{"name":"阅读6","chars":["在","我","左","右","和"]},{"name":"阅读7","chars":["也","又","才","爸","妈"]},{"name":"阅读8","chars":["比","巴","长","公"]},{"name":"阅读9","chars":["只","个","多","石","出"]},{"name":"阅读10","chars":["来","半","你","有"]},{"name":"语文园地8","chars":["牛","羊","果","白"]}]},{"label":"下册","lessons":[{"name":"第01课","chars":["春","冬","风","雪","花","飞","入"]},{"name":"第02课","chars":["姓","什","么","双","国","王","方"]},{"name":"第03课","chars":["青","清","气","晴","情","请","生"]},{"name":"第04课","chars":["字","左","右","红","时","动","万"]},{"name":"第05课","chars":["吃","叫","主","江","住","没","以"]},{"name":"第06课","chars":["多","会","走","北","京","广","公"]},{"name":"第07课","chars":["太","阳","校","金","秋","因","为"]},{"name":"第08课","chars":["他","地","河","说","也","听","哥"]},{"name":"第09课","chars":["单","种","居","招","呼","快","乐"]},{"name":"第10课","chars":["玩","很","当","音","讲","行","许"]},{"name":"第11课","chars":["思","床","前","光","低","故","乡"]},{"name":"第12课","chars":["色","外","看","爸","晚","笑","再"]},{"name":"第13课","chars":["午","节","叶","米","分","样","豆"]},{"name":"第14课","chars":["那","着","到","高","兴","千","成"]},{"name":"第15课","chars":["间","迷","造","运","池","欢","网"]},{"name":"第16课","chars":["古","凉","细","夕","李","语","香"]},{"name":"第17课","chars":["打","拍","跑","足","声","身","体"]},{"name":"第18课","chars":["之","相","近","习","远","玉","义"]},{"name":"第19课","chars":["首","采","无","树","爱","尖","角"]},{"name":"第20课","chars":["亮","机","台","放","鱼","朵","美"]},{"name":"第21课","chars":["过","这","呀","边","吗","吧","加"]},{"name":"第22课","chars":["文","平","办","让","包","伙","伴"]},{"name":"第23课","chars":["钟","丁","元","面","车","共","坐"]},{"name":"第24课","chars":["要","连","百","今","还","舌","点"]},{"name":"第25课","chars":["块","非","常","往","片","瓜","进","空"]},{"name":"第26课","chars":["病","她","医","别","干","奇","七","星"]},{"name":"第27课","chars":["吓","怕","跟","起","家","羊","象","都"]},{"name":"第28课","chars":["捉","条","向","爬","姐","您","草","房"]}]}]},{"key":"2年级","label":"二年级","vols":[{"label":"上册","lessons":[{"name":"第01课","chars":["找","两","哪","宽","顶","眼","睛","肚","皮","跳"]},{"name":"第02课","chars":["变","极","傍","海","洋","作","坏","给","带"]},{"name":"第03课","chars":["法","如","已","经","它","娃","毛","更","知","识"]},{"name":"第04课","chars":["处","园","桥","群","队","旗","铜","号","领","巾"]},{"name":"第05课","chars":["杨","壮","桐","枫","松","柏","棉","杉","化","桂"]},{"name":"第06课","chars":["歌","写","丛","深","六","熊","猫","九","朋","友"]},{"name":"第07课","chars":["季","吹","肥","农","事","忙","归","戴","辛","苦"]},{"name":"第08课","chars":["称","柱","底","杆","秤","做","岁","站","船","然"]},{"name":"第09课","chars":["画","幅","评","奖","纸","报","另","及","拿","并"]},{"name":"第10课","chars":["封","信","支","圆","珠","笔","灯","句","电","影"]},{"name":"第11课","chars":["哄","先","闭","脸","沉","发","窗","沙"]},{"name":"第12课","chars":["依","尽","黄","层","照","炉","烟","挂","川","直"]},{"name":"第13课","chars":["南","部","些","巨","真","位","每","升","闪","狗"]},{"name":"第14课","chars":["湾","名","胜","迹","央","丽","展","现"]},{"name":"第15课","chars":["产","份","坡","枝","客","老","收","城","市"]},{"name":"第16课","chars":["井","观","沿","答","渴","喝","话","际"]},{"name":"第17课","chars":["脚","道","阵","朗","枯","却","第","将","难","纷"]},{"name":"第18课","chars":["棵","谢","次","想","盯","言","呢","邻","治","怪"]},{"name":"第19课","chars":["楼","年","夜","披","轻","利"]},{"name":"第20课","chars":["扁","担","志","伍","师","军","战","士"]},{"name":"第21课","chars":["忘","泼","度","龙","炮","穿","始","令"]},{"name":"第22课","chars":["刘","胡","兰","反","村","关"]},{"name":"第23课","chars":["危","敢","惊","阴","似","野","苍","茫"]},{"name":"第24课","chars":["孩","于","论","岸","屋","切","久","散","步"]},{"name":"第25课","chars":["唱","赶","旺","旁","浑","候","谁","汽"]},{"name":"第26课","chars":["食","物","爷","就","爪","神","活","猪"]},{"name":"第27课","chars":["折","张","祝","扎","抓","吵","但","哭"]},{"name":"第28课","chars":["得","秧","苗","汗","急","场","被","伤","路"]}]},{"label":"下册","lessons":[{"name":"第01课","chars":["诗","童","趁","碧","妆","绿","丝","剪"]},{"name":"第02课","chars":["冲","寻","姑","娘","仔","吐","柳","荡","桃","杏"]},{"name":"第03课","chars":["鲜","邮","递","员","原","叔","局","堆","认","礼"]},{"name":"第04课","chars":["邓","植","格","引","注","满","休","息"]},{"name":"第05课","chars":["锋","昨","冒","留","弯","背","洒","温","暖"]},{"name":"第06课","chars":["能","桌","味","买","具","甘","甜","菜","劳"]},{"name":"第07课","chars":["匹","妹","波","纹","像","景","恋","舍","求"]},{"name":"第08课","chars":["州","华","岛","峡","族","谊","齐","奋"]},{"name":"第09课","chars":["贴","街","舟","艾","敬","转","团","热","闹"]},{"name":"第10课","chars":["贝","壳","甲","骨","钱","币","与","财","购"]},{"name":"第11课","chars":["烧","茄","烤","鸭","肉","鸡","蛋","炒","饭"]},{"name":"第12课","chars":["彩","梦","森","拉","结","苹","般","精","灵"]},{"name":"第13课","chars":["伞","姨","弟","便","教","游","戏","母"]},{"name":"第14课","chars":["周","围","句","补","充","药","合","死","记"]},{"name":"第15课","chars":["屁","股","净","总","幸","婶","使","劲"]},{"name":"第16课","chars":["亡","牢","钻","劝","丢","告","筋","疲"]},{"name":"第17课","chars":["图","课","摆","座","室","交","哈","页","抢","嘻"]},{"name":"第18课","chars":["愿","意","麦","该","伯","刻","突","掉"]},{"name":"第19课","chars":["湖","莲","穷","荷","绝","含","岭","吴"]},{"name":"第20课","chars":["雷","乌","黑","压","垂","户","新","迎","扑"]},{"name":"第21课","chars":["指","针","帮","助","导","永","碰","特","积"]},{"name":"第22课","chars":["杯","失","洗","澡","容","易","浴","桶"]},{"name":"第23课","chars":["扇","慢","遇","兔","安","根","痛","最"]},{"name":"第24课","chars":["店","决","定","商","夫","终","完","换","期"]},{"name":"第25课","chars":["蛙","卖","搬","倒","籽","泉","破","应"]},{"name":"第26课","chars":["整","抽","纺","织","编","怎","布","消"]},{"name":"第27课","chars":["祖","啊","浓","望","蓝","摘","掏","赛","忆"]},{"name":"第28课","chars":["觉","值","类","艰","弓","炎","害","此"]},{"name":"第29课","chars":["帝","传","忽","启","由","理","段","通"]}]}]},{"key":"3年级","label":"三年级","vols":[{"label":"上册","lessons":[{"name":"第01课","chars":["晨","绒","球","汉","艳","服","装","扮","静","停","孔","雀","粗"]},{"name":"第02课","chars":["荒","笛","舞","狂","功","罚","假","互","所","够","猜","扬","臂"]},{"name":"第03课","chars":["寒","径","斜","霜","赠","盖","菊","残","君","橙","送","挑","落"]},{"name":"第04课","chars":["铺","泥","晶","院","墙","印","排","列","规","则","乱","棕","迟"]},{"name":"第05课","chars":["盒","颜","料","票","争","仙","闻","勾","紧","洞","油","曲","丰"]},{"name":"第06课","chars":["柴","旧","裙","怜","饿","简","蜡","烛","伸","板","富","颗","奶"]},{"name":"第07课","chars":["旅","咱","偷","救","命","拼","扫","胃","管","乎","咬","流","泪"]},{"name":"第08课","chars":["准","备","等","暴","睡","壁","砍","蜘","蛛","漂","撞","饱","晒"]},{"name":"第09课","chars":["搭","亲","父","啦","响","羽","翠","嘴","悄","吞","哦","捕"]},{"name":"第10课","chars":["蒲","英","盛","耍","喊","欠","钓","而","察","拢","掌","趣","喜"]},{"name":"第11课","chars":["断","楚","至","孤","帆","饮","初","镜","未","磨","遥","银","盘"]},{"name":"第12课","chars":["优","淡","浅","错","岩","挺","刺","鼓","数","厚","宝","贵","业"]},{"name":"第13课","chars":["滨","灰","飘","渔","遍","躺","载","靠","亚","夏","除","踩","洁"]},{"name":"第14课","chars":["脑","袋","严","实","挡","视","线","坛","显","材","软","刮","库"]},{"name":"第15课","chars":["妙","演","奏","琴","感","受","激","击","器","滴","敲","鸣","诉"]},{"name":"第16课","chars":["读","虾","麻","勇","蚂","蚁","短","栽","梨","寸","柔","摇","册"]},{"name":"第17课","chars":["朝","雾","蒙","鼻","抖","露","湿","吸","猎","翅","膀","重"]},{"name":"第18课","chars":["司","庭","登","跌","众","弃","持"]},{"name":"第19课","chars":["郊","养","粉","谷","粒","男","或","者","冻","冷","惜","肯","诚"]},{"name":"第20课","chars":["术","斗","焰","刚","烈","离","血","仍","取","匆","险"]}]},{"label":"下册","lessons":[{"name":"第01课","chars":["融","燕","鸳","鸯","惠","崇","芦","芽","梅","溪","泛","减"]},{"name":"第02课","chars":["凑","拂","集","聚","形","掠","偶","尔","沾","倦","闲","纤","痕"]},{"name":"第03课","chars":["瓣","蓬","胀","裂","姿","势","仿","佛","随","蹈","止"]},{"name":"第04课","chars":["守","株","待","宋","耕","触","颈","释","其"]},{"name":"第05课","chars":["骄","傲","谦","虚","懦","弱","提","尘","讶","捧","代","价"]},{"name":"第06课","chars":["鹿","塘","映","欣","赏","匀","致","配","哎","狮","追","叹"]},{"name":"第07课","chars":["符","欲","魂","借","酒","何","牧","兄","独","异","佳"]},{"name":"第08课","chars":["世","界","伟","录","保","存","约","验","捞","阿","欧","洲","社"]},{"name":"第09课","chars":["赵","省","县","匠","设","计","史","创","举","且","智","慧","历"]},{"name":"第10课","chars":["芬","芳","内","醒","寿","苏","强","示","昆","修","建","组"]},{"name":"第11课","chars":["蜜","蜂","辨","阻","跨","括","检","查","确","误","途","陌"]},{"name":"第12课","chars":["宇","宙","淌","秘","密","栋","梯","铃","乘","绪","篇","越"]},{"name":"第13课","chars":["状","狐","狸","腰","零","巧","克","肠","继","续","抬","烦"]},{"name":"第14课","chars":["墨","染","竿","腾","碎","拨","浪","葫","爽","蘑","菇"]},{"name":"第15课","chars":["表","胆","理","夺","骂","仇","差","付","倍","虽","鬼","泡","件"]},{"name":"第16课","chars":["皂","剩","碗","悠","若","透","娇","扯","仰","串","婴","希"]},{"name":"第17课","chars":["呈","幻","诱","润","芒","冰","剑","普","模","型"]},{"name":"第18课","chars":["宁","官","汪","参","攻","推","迅","速","退","轮","煤","铁"]},{"name":"第19课","chars":["必","胡","灿","骑","秒","腿","凶","猛","接","庙","威","武","镇"]},{"name":"第20课","chars":["性","卷","货","算","夹","夸","务","衬","衫","负","责","艺"]},{"name":"第21课","chars":["漏","喂","胖","驴","贼","狼","莫","厉","抱","架","胶","粘","偏"]}]}]},{"key":"4年级","label":"四年级","vols":[{"label":"上册","lessons":[{"name":"第01课","chars":["潮","据","堤","阔","盼","滚","顿","逐","渐","堵","犹","崩","震","霎","余"]},{"name":"第02课","chars":["淘","牵","鹅","卵","坑","洼","填","庄","稼","俗","跃","葡","萄","稻","熟"]},{"name":"第03课","chars":["豌","按","舒","适","暗","恐","僵","硬","枪","耐","探","愉","曾","沟","溢"]},{"name":"第04课","chars":["蚊","即","科","横","竖","绳","系","蝇","证","研","究","达","驾","驶"]},{"name":"第05课","chars":["唤","纪","技","改","程","超","亿","核","奥","益","联","质","哲","任","善"]},{"name":"第06课","chars":["暮","吟","题","侧","峰","庐","缘","降","费","须","逊","输"]},{"name":"第07课","chars":["虎","操","占","嫩","顺","均","叠","隙","茎","柄","萎","瞧","固"]},{"name":"第08课","chars":["宅","临","慎","选","择","址","良","穴","厅","卧","专","卫","较"]},{"name":"第09课","chars":["睁","翻","斧","劈","缓","浊","丈","撑","竭","累","液","奔","茂","滋"]},{"name":"第10课","chars":["帝","曰","溺","返","衔"]},{"name":"第11课","chars":["悲","惨","兽","佩","坚","违","抗","环","锁","既","狠","著","愤","获"]},{"name":"第12课","chars":["嗅","呆","奈","巢","齿","躯","掩","护","幼","搏","庞","量","愣"]},{"name":"第13课","chars":["级","链","颤","攀","猴","念","辫","呵"]},{"name":"第14课","chars":["摸","甚","跪","捶","绕","顽","脖","脱","概","惹","昏","握","摔","凭","掐"]},{"name":"第15课","chars":["班","殷","段","俩","练","套","裤","逃","亏","挖","撤","堂","砸","锅"]},{"name":"第16课","chars":["否","旋","况","败","椅","尤","恨","帅","预","溃","品","丑","豪"]},{"name":"第17课","chars":["塞","秦","征","词","催","醉","杰","亦","雄","项"]},{"name":"第18课","chars":["肃","默","晰","振","胸","怀","赞","效","凡","顾","训","斥"]},{"name":"第19课","chars":["戎","尝","诸","竞","唯"]},{"name":"第20课","chars":["豹","派","娶","媳","妇","淹","逼","浮","旱","徒","扔","饶","骗","灌","溉"]}]},{"label":"下册","lessons":[{"name":"第01课","chars":["杂","稀","蜻","蜓","蝶","宿","徐","疏","茅","檐","翁","笼","赖","剥"]},{"name":"第02课","chars":["构","饰","蹲","凤","序","投","例","率","耸","踏","倘","绘","谐","寄","眠"]},{"name":"第03课","chars":["慰","藉","卜","锐","滩","帐","烁","蝙","蝠","霸","鹰"]},{"name":"第04课","chars":["怒","吼","脂","拭","餐","划","晌","辣","渗","挣","番","埋","刷","测","详"]},{"name":"第05课","chars":["笨","钝","鸽","毫","凌","末","描","隧","态","吨","颅","膨","肢","翼","辟"]},{"name":"第06课","chars":["纳","拥","箱","臭","蔬","碳","钢","隐","健","康","胞","疾","防","灶","需"]},{"name":"第07课","chars":["繁","漫","灭","藤","萝","膝","涛","躲"]},{"name":"第08课","chars":["瓶","挤","叉","挥"]},{"name":"第09课","chars":["桦","涂","茸","绣","潇","穗","朦","胧","寂","霞","抹"]},{"name":"第10课","chars":["忧","虑","贪","职","屏","蹭","稿","腔","解","闷","蛇","遭","殃","盆","勃"]},{"name":"第11课","chars":["讨","厌","坝","忠","毒","绩","孵","警","戒","歪","咕","汤","掘","伏","啼"]},{"name":"第12课","chars":["调","促","颇","剧","苟","譬","侍","馆","附","脾","敏","捷","昂","供","添"]},{"name":"第13课","chars":["扩","范","努","刹","烂","替","镶","紫","仅"]},{"name":"第14课","chars":["浙","罗","杜","鹃","窄","郁","肩","臀","移","额","陆","乳","笋","端","源"]},{"name":"第15课","chars":["囊","萤","恭","勤","博","贫","逢"]},{"name":"第16课","chars":["晋","扭","炕","铅","晃","哩","栓","胳","膊","劫","绸","扒","敌","尸","慌"]},{"name":"第17课","chars":["芙","蓉","洛","壶","雁"]},{"name":"第18课","chars":["射","弹","启","荣","爆","炸"]},{"name":"第19课","chars":["伦","腹","剖","窟","窿","混","嘶","维","秩","岗","宰","措","遣","践"]},{"name":"第20课","chars":["介","绍","妖","矩","乖","撵","烫","丫","拽","福","舔","葵","瘦","棒","罢"]},{"name":"第21课","chars":["硕","允","砌","牌","禁","惩","踪","啸","私","颊","拆"]}]}]},{"key":"5年级","label":"五年级","vols":[{"label":"上册","lessons":[{"name":"第01课","chars":["宜","鹤","嫌","朱","嵌","框","匣","嗜","哨","恩","韵"]},{"name":"第02课","chars":["亩","播","浇","吩","咐","亭","榨","慕","矮","谈"]},{"name":"第03课","chars":["懂","兰","箩","婆","糕","饼","浸","缠","茶","捡"]},{"name":"第04课","chars":["汛","访","鞋","挽","隔","懒","惰","稳","衡","协","绰"]},{"name":"第05课","chars":["召","臣","议","缺","宫","献","诺","典","抄","罪","怯","拒","荆"]},{"name":"第06课","chars":["冠","俯","喷","枚","箭","筒","束","赤","圈","置"]},{"name":"第07课","chars":["侵","略","筑","堡","党","丘","妨","蔽","陷","拐"]},{"name":"第08课","chars":["酬","珍","叮","嘱","塌","焦","誓","谎","延","悔","扶"]},{"name":"第09课","chars":["郎","爹","嫂","辆","歹","罕","纱","妻","趟","托","溜","婚","辈","挨"]},{"name":"第10课","chars":["祭","乃","熏","杭","亥","恃","哀","拘"]},{"name":"第11课","chars":["泻","潜","试","胎","皇","履","疆"]},{"name":"第12课","chars":["毁","估","拱","辉","煌","殿","陵","览","境","宏","唐","闯","统","销","奉"]},{"name":"第13课","chars":["摄","氏","殖","粮","炭","区","杀","菌","疗"]},{"name":"第14课","chars":["鼠","秀","玲","珑","歇","窝","滑","拾","狭","勉","梳"]},{"name":"第15课","chars":["辞","抑","碌","吊","酷","暑","噪","脊","罩","竟","哇","忍","械","酸","权"]},{"name":"第16课","chars":["蚕","考","疼","席","糖","屑","迪","钉","陪","毕","煮","枕"]},{"name":"第17课","chars":["孙","泊","愁","寺","畔"]},{"name":"第18课","chars":["黎","晕","漆","幕","愈","旷","怡","逸","免"]},{"name":"第19课","chars":["桨","榕","纠","耀","桩","涨","塔","梢","暇","眉","抛"]},{"name":"第20课","chars":["耻","诲","谓","诵","岂"]},{"name":"第21课","chars":["舅","津","斩","限","凯","葛","述","贾","衰","刊","琐","朴","某"]}]},{"label":"下册","lessons":[{"name":"第01课","chars":["昼","耘","桑","晓"]},{"name":"第02课","chars":["蝴","蚱","嗡","樱","榆","拔","瞎","铲","锄","割","尾","承","拴","瓢","逛"]},{"name":"第03课","chars":["妒","忌","曹","督","委","鲁","遮","疑","惑","寨","擂","呐","插"]},{"name":"第04课","chars":["冈","饥","碟","斤","俺","榜","杖","申","兼","勿","拖","悉","坠","膛","截"]},{"name":"第05课","chars":["篱","仞","岳","摩","遗","涕","巫"]},{"name":"第06课","chars":["彭","拟","谋","瑞","损","锻","炼","眷","赴","搞","殊","尊","签","革"]},{"name":"第07课","chars":["庆","诊","沃","龄","匪","绷","审","剂","施","吭","崭","衷","慈","祥"]},{"name":"第08课","chars":["跤","搂","仗","鞭","欺","挠","扳","腕","剃","腮","疤","监","侄","喉","咙"]},{"name":"第09课","chars":["浆","傅","袱","障","芝","圣","犯","馅","轰","堪","诈","傻","捏","怔"]},{"name":"第10课","chars":["矛","盾","誉","吾"]},{"name":"第11课","chars":["嬴","拳","擦","策","荐"]},{"name":"第12课","chars":["艘","航","肆","帽","桅","撕","逗","唬","钩","扭","咧","舱","鸥","瞄"]},{"name":"第13课","chars":["尼","斯","艇","纵","艄","翘","垫","姆","祷","雇","簇","哗","码"]},{"name":"第14课","chars":["仪","眺","骏","驰","辽","绵","凳","吆","铛","罐","恢","踢","牲","畜"]},{"name":"第15课","chars":["梁","聪","诣","禽"]},{"name":"第16课","chars":["拇","搔","痒","秽","轧","拧","螺","纽","扣","貌","仓","渺","享","庸","憎"]}]}]},{"key":"6年级","label":"六年级","vols":[{"label":"上册","lessons":[{"name":"第01课","chars":["毯","玻","璃","裳","虹","蹄","腐","稍","微"]},{"name":"第02课","chars":["缀","窥","幽","雅","案","拙","帘","薄","糊","蕾","恰","襟","恍","怨"]},{"name":"第03课","chars":["德","鹊","蝉"]},{"name":"第04课","chars":["律","崖","渡","索"]},{"name":"第05课","chars":["寇","副","榴","弹","抡","贯","棋","悬","沸","涧","雹","屹","悦","迈","屈"]},{"name":"第06课","chars":["政","府","宾","盏","栏","汇","爆","宣","阅","制","坦","距","隆","射"]},{"name":"第07课","chars":["凛","疙","瘩","棍","裁","筹","橡","雕","跺","颓","沮","丧","趴","屉"]},{"name":"第08课","chars":["谜","尚","氧","倾","揭","斑","燥","漠","磁","素","盗","培"]},{"name":"第09课","chars":["咆","哮","嗓","哑","揪","瞪","呻","废"]},{"name":"第10课","chars":["汹","涌","澎","湃","熄","掀","困","唉","淋","嘿","糟","嘛","皱","勺"]},{"name":"第11课","chars":["棚","苔","藓","坪","蔗","瀑","增","缝","谚"]},{"name":"第12课","chars":["袖","篷","缩","疯","瓦","柜","喧","甩","嚷","蒜","酱","唇","蹦"]},{"name":"第13课","chars":["涯","莺"]},{"name":"第14课","chars":["莹","裹","篮","蔼","资","矿","慷","慨","贡","滥","基","睹"]},{"name":"第15课","chars":["哉","巍","弦","锦","曝","矣"]},{"name":"第16课","chars":["谱","菜","茵","盲","纯","键","缕","陶"]},{"name":"第17课","chars":["郑","拜","租","厨","毡","羞","撒","缚","猬","伶","俐","窜"]},{"name":"第18课","chars":["搁","综","澄","萍","漾","削","瞬","凝","骤","掷","陡"]}]},{"label":"下册","lessons":[{"name":"第01课","chars":["醋","饺","摊","拌","筝","眨","宵","燃","戚","贩","彼","贺","轿","骆","驼"]},{"name":"第02课","chars":["腊","粥","腻","枣","咽","匙","搅","稠","肿","熬","褐","缸","脏","筷"]},{"name":"第03课","chars":["御","侯","皎","章","泣","盈","脉","栖","鸦"]},{"name":"第04课","chars":["惧","凄","寞","宴","霉","籍","聊","乏","控","贷","剔","毙","抵","袭","覆"]},{"name":"第05课","chars":["藏","挪","徘","徊","蒸","裸"]},{"name":"第06课","chars":["媚","砖","叨","绊","绞","耽","揉","绽","沫","搓","惶","吻","偎"]},{"name":"第07课","chars":["络","锤","凿","焚"]},{"name":"第08课","chars":["稚","避","峻","啪","僻","瞅","靴","魔","刑","哼","绑","啃","袍","押","执"]},{"name":"第09课","chars":["彻","迁","泰","迫","批","标","牺","炊","葬"]},{"name":"第10课","chars":["援","俱","弗","辩"]},{"name":"第11课","chars":["域","惯","圃","盐","溅","蕊","搜","蚯","蚓","版","阶"]},{"name":"第12课","chars":["脆","拦","恶","蟋","蟀"]}]}]}];
+const STORE_KEY='hanzi_tingxie_course_order_v4';
+const STICKERS=[
+  {id:'star',emoji:'⭐',name:'星星贴纸',cost:5},
+  {id:'sparkle',emoji:'✨',name:'闪闪贴纸',cost:5},
+  {id:'glow',emoji:'🌟',name:'亮星贴纸',cost:5},
+  {id:'shootingstar',emoji:'🌠',name:'流星贴纸',cost:5},
+  {id:'flower',emoji:'🌸',name:'小花贴纸',cost:5},
+  {id:'blossom',emoji:'🌼',name:'黄花贴纸',cost:5},
+  {id:'tulip',emoji:'🌷',name:'郁金香贴纸',cost:5},
+  {id:'rose',emoji:'🌹',name:'玫瑰贴纸',cost:5},
+  {id:'hibiscus',emoji:'🌺',name:'大花贴纸',cost:5},
+  {id:'lotus',emoji:'🪷',name:'荷花贴纸',cost:5},
+  {id:'leaf',emoji:'🍃',name:'叶子贴纸',cost:5},
+  {id:'clover',emoji:'☘️',name:'三叶草贴纸',cost:5},
+  {id:'fourleaf',emoji:'🍀',name:'幸运草贴纸',cost:5},
+  {id:'sun',emoji:'☀️',name:'太阳贴纸',cost:5},
+  {id:'moon',emoji:'🌙',name:'月亮贴纸',cost:5},
+  {id:'cloud',emoji:'☁️',name:'云朵贴纸',cost:5},
+  {id:'rain',emoji:'🌧️',name:'小雨贴纸',cost:5},
+  {id:'snow',emoji:'❄️',name:'雪花贴纸',cost:5},
+  {id:'heart',emoji:'💖',name:'爱心贴纸',cost:5},
+  {id:'pinkheart',emoji:'💕',name:'双心贴纸',cost:5},
+  {id:'orange_heart',emoji:'🧡',name:'橙心贴纸',cost:5},
+  {id:'yellow_heart',emoji:'💛',name:'黄心贴纸',cost:5},
+  {id:'green_heart',emoji:'💚',name:'绿心贴纸',cost:5},
+  {id:'blue_heart',emoji:'💙',name:'蓝心贴纸',cost:5},
+  {id:'purple_heart',emoji:'💜',name:'紫心贴纸',cost:5},
+  {id:'apple',emoji:'🍎',name:'苹果贴纸',cost:5},
+  {id:'pear',emoji:'🍐',name:'梨子贴纸',cost:5},
+  {id:'peach',emoji:'🍑',name:'桃子贴纸',cost:5},
+  {id:'grapes',emoji:'🍇',name:'葡萄贴纸',cost:5},
+  {id:'cherry',emoji:'🍒',name:'樱桃贴纸',cost:5},
+  {id:'tree',emoji:'🌳',name:'大树贴纸',cost:6},
+  {id:'pine',emoji:'🌲',name:'松树贴纸',cost:6},
+  {id:'palm',emoji:'🌴',name:'椰树贴纸',cost:6},
+  {id:'cactus',emoji:'🌵',name:'仙人掌贴纸',cost:6},
+  {id:'mushroom',emoji:'🍄',name:'蘑菇贴纸',cost:6},
+  {id:'strawberry',emoji:'🍓',name:'草莓贴纸',cost:6},
+  {id:'orange',emoji:'🍊',name:'橙子贴纸',cost:6},
+  {id:'lemon',emoji:'🍋',name:'柠檬贴纸',cost:6},
+  {id:'banana',emoji:'🍌',name:'香蕉贴纸',cost:6},
+  {id:'watermelon',emoji:'🍉',name:'西瓜贴纸',cost:6},
+  {id:'pineapple',emoji:'🍍',name:'菠萝贴纸',cost:6},
+  {id:'cookie',emoji:'🍪',name:'饼干贴纸',cost:6},
+  {id:'cake',emoji:'🍰',name:'蛋糕贴纸',cost:6},
+  {id:'cupcake',emoji:'🧁',name:'杯子蛋糕贴纸',cost:6},
+  {id:'icecream',emoji:'🍦',name:'冰淇淋贴纸',cost:6},
+  {id:'donut',emoji:'🍩',name:'甜甜圈贴纸',cost:6},
+  {id:'candy',emoji:'🍬',name:'糖果贴纸',cost:6},
+  {id:'lollipop',emoji:'🍭',name:'棒棒糖贴纸',cost:6},
+  {id:'house',emoji:'🏠',name:'小屋贴纸',cost:6},
+  {id:'tent',emoji:'⛺',name:'帐篷贴纸',cost:6},
+  {id:'train',emoji:'🚂',name:'火车贴纸',cost:6},
+  {id:'car',emoji:'🚗',name:'小车贴纸',cost:6},
+  {id:'bus',emoji:'🚌',name:'巴士贴纸',cost:6},
+  {id:'taxi',emoji:'🚕',name:'出租车贴纸',cost:6},
+  {id:'boat',emoji:'⛵',name:'小船贴纸',cost:6},
+  {id:'umbrella',emoji:'☂️',name:'雨伞贴纸',cost:6},
+  {id:'key',emoji:'🔑',name:'钥匙贴纸',cost:6},
+  {id:'bell',emoji:'🔔',name:'铃铛贴纸',cost:6},
+  {id:'mail',emoji:'✉️',name:'信封贴纸',cost:6},
+  {id:'clock',emoji:'⏰',name:'闹钟贴纸',cost:6},
+  {id:'cat',emoji:'🐱',name:'小猫贴纸',cost:8},
+  {id:'dog',emoji:'🐶',name:'小狗贴纸',cost:8},
+  {id:'rabbit',emoji:'🐰',name:'小兔贴纸',cost:8},
+  {id:'fox',emoji:'🦊',name:'狐狸贴纸',cost:8},
+  {id:'bear',emoji:'🐻',name:'小熊贴纸',cost:8},
+  {id:'panda',emoji:'🐼',name:'熊猫贴纸',cost:8},
+  {id:'koala',emoji:'🐨',name:'考拉贴纸',cost:8},
+  {id:'monkey',emoji:'🐵',name:'小猴贴纸',cost:8},
+  {id:'lion',emoji:'🦁',name:'狮子贴纸',cost:8},
+  {id:'tiger',emoji:'🐯',name:'老虎贴纸',cost:8},
+  {id:'cow',emoji:'🐮',name:'小牛贴纸',cost:8},
+  {id:'pig',emoji:'🐷',name:'小猪贴纸',cost:8},
+  {id:'frog',emoji:'🐸',name:'青蛙贴纸',cost:8},
+  {id:'mouse',emoji:'🐭',name:'小鼠贴纸',cost:8},
+  {id:'hamster',emoji:'🐹',name:'仓鼠贴纸',cost:8},
+  {id:'penguin',emoji:'🐧',name:'企鹅贴纸',cost:8},
+  {id:'owl',emoji:'🦉',name:'猫头鹰贴纸',cost:8},
+  {id:'chick',emoji:'🐥',name:'小鸡贴纸',cost:8},
+  {id:'duck',emoji:'🦆',name:'小鸭贴纸',cost:8},
+  {id:'eagle',emoji:'🦅',name:'老鹰贴纸',cost:8},
+  {id:'whale',emoji:'🐳',name:'鲸鱼贴纸',cost:8},
+  {id:'dolphin',emoji:'🐬',name:'海豚贴纸',cost:8},
+  {id:'fish',emoji:'🐠',name:'小鱼贴纸',cost:8},
+  {id:'blowfish',emoji:'🐡',name:'河豚贴纸',cost:8},
+  {id:'octopus',emoji:'🐙',name:'章鱼贴纸',cost:8},
+  {id:'crab',emoji:'🦀',name:'螃蟹贴纸',cost:8},
+  {id:'butterfly',emoji:'🦋',name:'蝴蝶贴纸',cost:8},
+  {id:'bee',emoji:'🐝',name:'蜜蜂贴纸',cost:8},
+  {id:'ladybug',emoji:'🐞',name:'瓢虫贴纸',cost:8},
+  {id:'turtle',emoji:'🐢',name:'乌龟贴纸',cost:8},
+  {id:'snail',emoji:'🐌',name:'蜗牛贴纸',cost:8},
+  {id:'hedgehog',emoji:'🦔',name:'刺猬贴纸',cost:8},
+  {id:'rainbow',emoji:'🌈',name:'彩虹贴纸',cost:10},
+  {id:'rocket',emoji:'🚀',name:'火箭贴纸',cost:10},
+  {id:'book',emoji:'📚',name:'书本贴纸',cost:10},
+  {id:'openbook',emoji:'📖',name:'打开的书贴纸',cost:10},
+  {id:'notebook',emoji:'📒',name:'本子贴纸',cost:10},
+  {id:'pencil',emoji:'✏️',name:'铅笔贴纸',cost:10},
+  {id:'pen',emoji:'🖊️',name:'钢笔贴纸',cost:10},
+  {id:'crayon',emoji:'🖍️',name:'蜡笔贴纸',cost:10},
+  {id:'paint',emoji:'🎨',name:'画板贴纸',cost:10},
+  {id:'palette',emoji:'🖌️',name:'画笔贴纸',cost:10},
+  {id:'music',emoji:'🎵',name:'音乐贴纸',cost:10},
+  {id:'notes',emoji:'🎶',name:'音符贴纸',cost:10},
+  {id:'guitar',emoji:'🎸',name:'吉他贴纸',cost:10},
+  {id:'violin',emoji:'🎻',name:'小提琴贴纸',cost:10},
+  {id:'piano',emoji:'🎹',name:'钢琴贴纸',cost:10},
+  {id:'drum',emoji:'🥁',name:'小鼓贴纸',cost:10},
+  {id:'soccer',emoji:'⚽',name:'足球贴纸',cost:10},
+  {id:'basketball',emoji:'🏀',name:'篮球贴纸',cost:10},
+  {id:'baseball',emoji:'⚾',name:'棒球贴纸',cost:10},
+  {id:'tennis',emoji:'🎾',name:'网球贴纸',cost:10},
+  {id:'swim',emoji:'🏊',name:'游泳贴纸',cost:10},
+  {id:'bike',emoji:'🚲',name:'自行车贴纸',cost:10},
+  {id:'skate',emoji:'🛼',name:'轮滑贴纸',cost:10},
+  {id:'kite',emoji:'🪁',name:'风筝贴纸',cost:10},
+  {id:'balloon',emoji:'🎈',name:'气球贴纸',cost:10},
+  {id:'gift',emoji:'🎁',name:'礼物贴纸',cost:10},
+  {id:'lamp',emoji:'💡',name:'灯泡贴纸',cost:10},
+  {id:'magnifier',emoji:'🔍',name:'放大镜贴纸',cost:10},
+  {id:'puzzle',emoji:'🧩',name:'拼图贴纸',cost:10},
+  {id:'dice',emoji:'🎲',name:'骰子贴纸',cost:10},
+  {id:'target',emoji:'🎯',name:'靶心贴纸',cost:10},
+  {id:'magicwand',emoji:'🪄',name:'魔法棒贴纸',cost:10},
+  {id:'crown',emoji:'👑',name:'皇冠贴纸',cost:12},
+  {id:'dragon',emoji:'🐲',name:'小龙贴纸',cost:12},
+  {id:'medal',emoji:'🏅',name:'奖牌贴纸',cost:12},
+  {id:'trophy',emoji:'🏆',name:'奖杯贴纸',cost:12},
+  {id:'castle',emoji:'🏰',name:'城堡贴纸',cost:12},
+  {id:'unicorn',emoji:'🦄',name:'独角兽贴纸',cost:12},
+  {id:'fairy',emoji:'🧚',name:'小仙子贴纸',cost:12},
+  {id:'wizard',emoji:'🧙',name:'魔法师贴纸',cost:12},
+  {id:'planet',emoji:'🪐',name:'星球贴纸',cost:12},
+  {id:'comet',emoji:'☄️',name:'彗星贴纸',cost:12},
+  {id:'ufo',emoji:'🛸',name:'飞碟贴纸',cost:12},
+  {id:'satellite',emoji:'🛰️',name:'卫星贴纸',cost:12},
+  {id:'gem',emoji:'💎',name:'宝石贴纸',cost:12},
+  {id:'map',emoji:'🗺️',name:'地图贴纸',cost:12},
+  {id:'compass',emoji:'🧭',name:'指南针贴纸',cost:12},
+  {id:'anchor',emoji:'⚓',name:'船锚贴纸',cost:12},
+  {id:'camera',emoji:'📷',name:'相机贴纸',cost:12},
+  {id:'microscope',emoji:'🔬',name:'显微镜贴纸',cost:12},
+  {id:'telescope',emoji:'🔭',name:'望远镜贴纸',cost:12},
+  {id:'robot',emoji:'🤖',name:'机器人贴纸',cost:12},
+  {id:'alien',emoji:'👽',name:'外星人贴纸',cost:12},
+  {id:'ninja',emoji:'🥷',name:'小忍者贴纸',cost:12},
+  {id:'shield',emoji:'🛡️',name:'盾牌贴纸',cost:12},
+  {id:'scroll',emoji:'📜',name:'卷轴贴纸',cost:12},
+  {id:'fireworks',emoji:'🎆',name:'烟花贴纸',cost:15},
+  {id:'party',emoji:'🎉',name:'庆祝贴纸',cost:15},
+  {id:'pinata',emoji:'🪅',name:'彩罐贴纸',cost:15},
+  {id:'carousel',emoji:'🎠',name:'旋转木马贴纸',cost:15},
+  {id:'ferris',emoji:'🎡',name:'摩天轮贴纸',cost:15},
+  {id:'circus',emoji:'🎪',name:'马戏团贴纸',cost:15},
+  {id:'island',emoji:'🏝️',name:'小岛贴纸',cost:15},
+  {id:'mountain',emoji:'⛰️',name:'高山贴纸',cost:15},
+  {id:'volcano',emoji:'🌋',name:'火山贴纸',cost:15},
+  {id:'milkyway',emoji:'🌌',name:'银河贴纸',cost:15},
+  {id:'school',emoji:'🏫',name:'学校贴纸',cost:15},
+  {id:'library',emoji:'🏛️',name:'图书馆贴纸',cost:15},
+  {id:'labcoat',emoji:'🥼',name:'科学家贴纸',cost:15},
+  {id:'dna',emoji:'🧬',name:'DNA贴纸',cost:15},
+];
+const app=document.getElementById('app');
+const S={g:null,v:null,screen:'home',list:[],i:0,phase:'write',img:null,hasInk:false,session:null,done:{},wrong:{},coins:0,stickers:{},album:[],selectedSticker:null,albumPage:0,removeMode:false,activePlacedSticker:null};
+function load(){try{const x=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');S.done=x.done||{};S.wrong=x.wrong||{};S.coins=Number.isFinite(x.coins)?x.coins:0;S.stickers=x.stickers||{};S.album=Array.isArray(x.album)?x.album:[];}catch(e){}}
+function save(){localStorage.setItem(STORE_KEY,JSON.stringify({done:S.done,wrong:S.wrong,coins:S.coins,stickers:S.stickers,album:S.album}));}
+load();normalizeAlbum();
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e;}
+function safe(t){return String(t).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function allLessons(){return DATA.flatMap((g,gi)=>g.vols.flatMap((v,vi)=>v.lessons.map((l,li)=>({g,gi,v,vi,l,li}))));}
+function makeItems(gi=null,vi=null,li=null){
+  const lessons=allLessons().filter(x=>(gi===null||x.gi===gi)&&(vi===null||x.vi===vi)&&(li===null||x.li===li));
+  return lessons.flatMap(x=>x.l.chars.map((c,ci)=>({id:`${x.g.key}|${x.v.label}|${x.l.name}|${ci}|${c}`,c,grade:x.g.label,gradeKey:x.g.key,vol:x.v.label,lesson:x.l.name,lessonNo:x.li+1,charNo:ci+1})));
+}
+function countDone(items){return items.filter(x=>S.done[x.id]).length;}
+function pct(items){return items.length?Math.round(countDone(items)/items.length*100):0;}
+function totalCount(){return makeItems(null,null,null).length;}
+function lessonCount(){return allLessons().length;}
+function startPractice(items,title){if(!items.length){alert('这个范围暂无生字');return;}S.list=items;S.i=0;S.phase='write';S.img=null;S.hasInk=false;S.session={title,ok:0,bad:0,total:items.length,wrongIds:[],earned:0};S.screen='practice';render();setTimeout(()=>speak(S.list[0]),350);}
+
+let audioCtx=null;
+function getAudioCtx(){
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)return null;
+  if(!audioCtx)audioCtx=new AC();
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  return audioCtx;
+}
+function playTone(ctx,freq,start,dur,type='sine',vol=.08){
+  const osc=ctx.createOscillator();
+  const gain=ctx.createGain();
+  osc.type=type;
+  osc.frequency.setValueAtTime(freq,start);
+  gain.gain.setValueAtTime(0.0001,start);
+  gain.gain.exponentialRampToValueAtTime(vol,start+0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001,start+dur);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(start);
+  osc.stop(start+dur+0.02);
+}
+function playSound(kind){
+  try{
+    const ctx=getAudioCtx();
+    if(!ctx)return;
+    const now=ctx.currentTime;
+    if(kind==='correct'){
+      playTone(ctx,660,now,0.11,'sine',0.07);
+      playTone(ctx,880,now+0.10,0.12,'sine',0.075);
+      playTone(ctx,1046,now+0.20,0.14,'sine',0.07);
+    }else if(kind==='wrong'){
+      playTone(ctx,330,now,0.16,'triangle',0.065);
+      playTone(ctx,247,now+0.13,0.20,'triangle',0.055);
+    }else if(kind==='buy'){
+      playTone(ctx,880,now,0.08,'sine',0.07);
+      playTone(ctx,1175,now+0.08,0.09,'sine',0.075);
+      playTone(ctx,1568,now+0.17,0.12,'sine',0.065);
+    }else if(kind==='finish'){
+      playTone(ctx,523,now,0.10,'sine',0.07);
+      playTone(ctx,659,now+0.10,0.10,'sine',0.07);
+      playTone(ctx,784,now+0.20,0.11,'sine',0.075);
+      playTone(ctx,1046,now+0.31,0.24,'sine',0.075);
+    }
+  }catch(e){}
+}
+
+
+const WORD_HINTS_DRAFT={"一":["统一","第一"],"丁":["园丁","丁字"],"七":["七八","六七"],"万":["千万","万岁"],"丈":["丈撑","浊丈"],"三":["第三","三角"],"上":["上面","以上"],"下":["下面","以下"],"不":["不是","不行"],"与":["参与","与其"],"丑":["小丑","丑陋"],"专":["专门","专卫"],"且":["而且","并且"],"世":["世界","世纪"],"丘":["沙丘","丘陵"],"业":["作业","工业"],"丛":["草丛","丛林"],"东":["东方","东西"],"丝":["蚕丝","丝绸"],"丢":["丢失","丢掉"],"两":["两个","两边"],"严":["严格","严肃"],"丧":["丧趴","沮丧"],"个":["一个","个人"],"丫":["脚丫","丫头"],"中":["中间","中国"],"丰":["丰富","丰收"],"串":["一连串","串婴"],"临":["濒临","临慎"],"为":["因为","为了"],"主":["主人","自主"],"丽":["美丽","丽日"],"举":["举旗","举例"],"乃":["乃至","乃是"],"久":["长久","久久"],"么":["什么","这么"],"义":["意义","义务"],"之":["无瑕之瑜","之相"],"乌":["乌云","乌黑"],"乎":["不亦乐乎","几乎"],"乏":["缺乏","疲乏"],"乐":["音乐","快乐"],"乖":["乖巧","乖乖"],"乘":["乘坐","乘法"],"九":["九月","九个"],"也":["也许","也是"],"习":["学习","练习"],"乡":["家乡","乡村"],"买":["购买","买具"],"乱":["胡涂乱抹","乱棕"],"乳":["乳白","乳汁"],"了":["了解","完了"],"争":["竞争","争论"],"事":["故事","做事"],"二":["第二","二月"],"于":["至于","于论"],"亏":["亏欠","亏挖"],"云":["白云","云朵"],"互":["互相","互动"],"五":["五官","五月"],"井":["水井","井口"],"亚":["亚洲","亚军"],"些":["一些","这些"],"亡":["死亡","亡牢"],"交":["交换","交哈"],"亥":["亥恃","杭亥"],"亦":["亦然","不亦乐乎"],"产":["矿产","产份"],"亩":["一亩","亩产"],"享":["享受","分享"],"京":["北京","京城"],"亭":["亭阁","亭榨"],"亮":["明亮","月亮"],"亲":["亲人","亲切"],"人":["人们","主人"],"亿":["一亿","亿万"],"什":["什么","干什么"],"仅":["仅有","不仅"],"仇":["仇人","报仇"],"今":["今天","至今"],"介":["媒介","介绍"],"仍":["仍然","仍旧"],"仓":["仓促","粮仓"],"仔":["仔细","仔吐"],"他":["他们","其他"],"仗":["打仗","战仗"],"付":["付钱","支付"],"仙":["神仙","仙境"],"仞":["仞岳","篱仞"],"代":["古代","朝代"],"令":["勒令","命令"],"以":["可以","所以"],"仪":["仪式","礼仪"],"仰":["仰望","信仰"],"件":["条件","事件"],"价":["评价","廉价"],"任":["赴任","任善"],"份":["部份","份量"],"仿":["模仿","仿照"],"伍":["队伍","伍长"],"伏":["埋伏","起伏"],"休":["休息","休闲"],"众":["众多","大众"],"优":["优秀","优美"],"伙":["伙伴","伙食"],"会":["开会","机会"],"伞":["雨伞","伞姨"],"伟":["伟大","伟人"],"传":["宣传","传播"],"伤":["伤口","伤害"],"伦":["伦理","人伦"],"伯":["伯伯","大伯"],"估":["估计","估算"],"伴":["伙伴","陪伴"],"伶":["伶俐","伶仃"],"伸":["伸手","伸直"],"似":["相似","好似"],"但":["但是","不但"],"位":["诸位","位每"],"低":["降低","低头"],"住":["居住","住址"],"体":["身体","体育"],"何":["如何","何时"],"余":["剩余","多余"],"佛":["仿佛","大佛"],"作":["写作","制作"],"你":["你好","谢谢你"],"佩":["佩服","敬佩"],"佳":["佳节","佳作"],"使":["使用","使劲"],"侄":["侄喉","监侄"],"例":["举例","例子"],"侍":["侍馆","譬侍"],"供":["供应","提供"],"依":["依然","依据"],"侧":["侧面","两侧"],"侯":["侯皎","御侯"],"侵":["侵略","入侵"],"便":["方便","便利"],"促":["促进","仓促"],"俐":["伶俐","聪俐"],"俗":["风俗","通俗"],"保":["保护","保证"],"信":["相信","信号"],"俩":["咱俩","俩练"],"修":["修改","修建"],"俯":["俯视","俯身"],"俱":["俱乐部","面面俱到"],"俺":["俺榜","斤俺"],"倍":["加倍","倍数"],"倒":["倒下","倒影"],"倘":["倘绘","踏倘"],"候":["候鸟","候谁"],"借":["借助","借书"],"倦":["疲倦","困倦"],"值":["值类","觉值"],"倾":["倾听","倾向"],"假":["假如","放假"],"偎":["吻偎","偎字"],"偏":["偏颇","粘偏"],"做":["做事","做到"],"停":["停止","停车"],"健":["健康","健身"],"偶":["偶尔","偶然"],"偷":["偷偷","偷懒"],"傅":["傅袱","浆傅"],"傍":["傍晚","傍海"],"催":["催促","催眠"],"傲":["骄傲","傲慢"],"傻":["傻捏","诈傻"],"像":["好像","铜像"],"僵":["僵硬","僵局"],"僻":["僻瞅","啪僻"],"儿":["儿子","女儿"],"允":["允许","允砌"],"元":["单元","元面"],"兄":["兄哥","兄弟"],"充":["充满","充药"],"先":["首先","优先"],"光":["阳光","月光"],"克":["克服","克制"],"免":["免费","避免"],"兔":["兔子","小兔"],"党":["党员","政党"],"入":["加入","进入"],"八":["八月","七八"],"公":["公园","公路"],"六":["六七","六熊"],"兰":["盂兰","兰反"],"共":["公共","共同"],"关":["关心","开关"],"兴":["高兴","兴趣"],"其":["其他","其它"],"具":["玩具","具甘"],"典":["典故","经典"],"养":["培养","养成"],"兼":["兼勿","申兼"],"兽":["野兽","猛兽"],"内":["内外","内醒"],"冈":["冈饥","冈字"],"册":["手册","画册"],"再":["再见","再次"],"冒":["冒留","昨冒"],"写":["书写","写作"],"军":["军营","军战"],"农":["农田","农村"],"冠":["冠军","衣冠"],"冬":["冬天","冬季"],"冰":["滑冰","冰雪"],"冲":["冲进","冲洗"],"决":["决定","店决"],"况":["情况","况且"],"冷":["寒冷","忽冷忽热"],"冻":["冷冻","冰冻"],"净":["干净","洁净"],"凄":["凄凉","凄清"],"准":["准确","准则"],"凉":["凉爽","清凉"],"凌":["凌晨","欺凌"],"减":["减少","泛减"],"凑":["凑齐","凑近"],"凛":["凛疙","凛字"],"凝":["凝固","凝视"],"几":["几个","几乎"],"凡":["平凡","凡是"],"凤":["凤凰","凤仙"],"凭":["凭藉","凭掐"],"凯":["凯旋","胜凯"],"凳":["凳椅","凳吆"],"凶":["凶猛","凶手"],"出":["出发","出现"],"击":["打击","攻击"],"凿":["开凿","凿子"],"刀":["剪刀","刀子"],"分":["十分","部分"],"切":["亲切","切久"],"刊":["刊物","书刊"],"刑":["刑法","受刑"],"划":["谋划","划晌"],"列":["排列","系列"],"刘":["姓刘","刘海"],"则":["规则","准则"],"刚":["刚才","坚刚"],"创":["创造","开创"],"初":["当初","初中"],"利":["锐利","吉利"],"别":["告别","分别"],"刮":["刮风","刮脸"],"到":["到达","得到"],"制":["制作","克制"],"刷":["印刷","刷测"],"刹":["刹车","一刹那"],"刺":["刺绣","刺激"],"刻":["刻苦","立刻"],"剂":["药剂","试剂"],"剃":["剃头","剃刀"],"削":["剥削","削瞬"],"前":["以前","面前"],"剑":["宝剑","剑术"],"剔":["挑剔","剔除"],"剖":["剖窟","腹剖"],"剥":["剥皮","剥削"],"剧":["豫剧","戏剧"],"剩":["剩余","剩下"],"剪":["剪刀","剪纸"],"副":["副手","一副"],"割":["收割","割断"],"劈":["劈开","劈柴"],"力":["力气","努力"],"劝":["劝说","劝告"],"办":["办法","办公"],"功":["成功","功能"],"加":["加油","参加"],"务":["义务","服务"],"动":["运动","行动"],"助":["帮助","助手"],"努":["努力","努嘴"],"劫":["抢劫","劫难"],"劲":["使劲","干劲"],"劳":["劳动","劳累"],"势":["气势磅礴","势仿"],"勃":["蓬勃","盆勃"],"勇":["勇敢","英勇"],"勉":["勉强","勉励"],"勤":["勤劳","勤奋"],"勺":["汤勺","勺子"],"勾":["勾画","勾住"],"勿":["勿忘","请勿"],"匀":["均匀","匀称"],"包":["书包","包围"],"匆":["匆忙","行色匆匆"],"化":["变化","文化"],"北":["北方","北京"],"匙":["钥匙","茶匙"],"匠":["工匠","木匠"],"匣":["木匣","匣子"],"匪":["土匪","匪徒"],"匹":["一匹","匹配"],"区":["地区","小区"],"医":["医生","医院"],"十":["十二","十分"],"千":["千里","千年"],"升":["升旗","上升"],"午":["中午","午饭"],"半":["一半","半天"],"华":["豪华","华岛"],"协":["协助","协议"],"单":["简单","单独"],"卖":["买卖","卖力"],"南":["南方","南北"],"博":["渊博","博士"],"卜":["萝卜","胡萝卜"],"占":["占有","占领"],"卧":["躺卧","卧专"],"卫":["保卫","卫星"],"印":["脚印","印象"],"危":["危险","危机"],"即":["立即","即使"],"却":["却是","退却"],"卵":["卵石","产卵"],"卷":["试卷","卷起"],"厂":["工厂","厂房"],"厅":["客厅","大厅"],"历":["经历","履历"],"厉":["严厉","厉害"],"压":["压抑","压垂"],"厌":["讨厌","厌烦"],"厚":["浑厚","厚宝"],"原":["原因","草原"],"厨":["厨房","厨师"],"去":["过去","去年"],"县":["县城","县长"],"参":["参加","人参"],"又":["又大","又好"],"叉":["叉子","交叉"],"及":["来不及矣","埃及"],"友":["朋友","友好"],"双":["双手","一双"],"反":["反思","反应"],"发":["发现","出发"],"叔":["叔叔","大叔"],"取":["采取","取消"],"受":["忍受","接受"],"变":["变化","改变"],"叠":["折叠","层峦叠嶂"],"口":["出口","口味"],"古":["古代","古诗"],"句":["句子","一句"],"另":["另外","另行"],"叨":["叨绊","砖叨"],"只":["船只","一只蜻蜓"],"叫":["叫做","大叫"],"召":["召集","号召"],"叮":["叮嘱","叮咛"],"可":["可以","可爱"],"台":["舞台","讲台"],"史":["历史","史书"],"右":["右边","右手"],"叶":["叶子","树叶"],"号":["号码","口号"],"司":["公司","司法"],"叹":["叹气","感叹"],"吃":["吃饭","好吃"],"吆":["吆铛","凳吆"],"合":["合适","配合"],"吊":["吊灯","吊车"],"名":["姓名","名字"],"吐":["吐出","呕吐"],"向":["方向","朝向"],"吓":["吓人","惊吓"],"吗":["好吗","是吗"],"君":["君子","国君"],"吞":["吞下","吞咽"],"吟":["低吟","吟唱"],"否":["否则","否旋"],"吧":["好吧","酒吧"],"吨":["一吨","吨位"],"吩":["吩咐","吩示"],"含":["含衔","蕴含"],"听":["倾听","听话"],"吭":["吭声","一声不吭"],"启":["启蒙","启迪"],"吴":["姓吴","吴国"],"吵":["争吵","吵闹"],"吸":["呼吸","吸猎"],"吹":["吹拂","吹肥"],"吻":["亲吻","口吻"],"吼":["大吼","吼叫"],"吾":["吾辈","吾人"],"呀":["嘿呀","唉呀"],"呆":["发呆","呆住"],"呈":["呈现","呈上"],"告":["广告","告别"],"呐":["呐喊","高声呐喊"],"员":["队员","成员"],"呢":["呢邻","言呢"],"周":["四周","周围"],"味":["味道","气味"],"呵":["呵护","呵气"],"呻":["呻吟","呻唤"],"呼":["呼吸","呼唤"],"命":["生命","命令"],"咆":["咆哮","咆吼"],"和":["温和","和平"],"咐":["嘱咐","咐亭"],"咕":["咕咕","咕噜"],"咙":["喉咙","咙哑"],"咧":["咧嘴","咧开"],"咬":["咬牙","咬住"],"咱":["咱们","咱俩"],"咽":["咽下","吞咽"],"哀":["悲哀","哀伤"],"品":["品质","商品"],"哄":["哄笑","哄人"],"哇":["好哇","哇哇"],"哈":["打哈欠","哈页"],"哉":["矣哉","哉巍"],"响":["影响","响羽"],"哎":["哎呀","哎哟"],"哑":["聋哑","哑揪"],"哗":["哗啦","喧哗"],"哥":["哥哥","大哥"],"哦":["噢哦","哦捕"],"哨":["口哨","哨兵"],"哩":["哩啦","着哩"],"哪":["哪里","哪个"],"哭":["哭泣","大哭"],"哮":["咆哮","哮喘"],"哲":["哲学","哲理"],"哼":["哼歌","哼声"],"唇":["嘴唇","唇蹦"],"唉":["唉声叹气","唉呀"],"唐":["唐朝","唐诗"],"唤":["呼唤","唤纪"],"唬":["吓唬","唬人"],"唯":["唯一","唯有"],"唱":["唱歌","演唱"],"啃":["啃骨头","啃书"],"商":["商品","商夫"],"啊":["好啊","啊呀"],"啦":["好啦","来啦"],"啪":["啪嗒","啪的一声"],"啸":["呼啸","虎啸"],"啼":["啼哭","悲啼"],"喂":["喂养","打喂"],"善":["善良","友善"],"喉":["喉咙","咽喉"],"喊":["呐喊","高声呐喊"],"喜":["喜欢","喜悦"],"喝":["喝水","喝粥"],"喧":["喧闹","喧哗"],"喷":["喷泉","喷出"],"嗅":["嗅觉","嗅到"],"嗓":["嗓子","嗓音"],"嗜":["嗜好","嗜睡"],"嗡":["嗡嗡","嗡鸣"],"嘛":["好吗","干嘛"],"嘱":["嘱咐","嘱托"],"嘴":["嘴巴","张嘴"],"嘶":["嘶哑","嘶叫"],"嘻":["笑嘻嘻","嘻笑"],"嘿":["嘿嘿","嘿呀"],"器":["乐器","机器"],"噪":["噪音","噪声"],"嚷":["叫嚷","吵嚷"],"囊":["慷慨解囊","囊萤"],"四":["四季","第四"],"因":["因为","原因"],"团":["团结","团圆"],"园":["花园","公园"],"困":["困惑","困倦"],"围":["包围","围巾"],"固":["牢固","凝固"],"国":["国家","国庆"],"图":["图画","地图"],"圃":["花圃","苗圃"],"圆":["圆形","圆满"],"圈":["圆圈","画圈"],"土":["泥土","土地"],"圣":["圣诞","圣犯"],"在":["现在","存在"],"地":["大地","地方"],"场":["操场","市场"],"址":["住址","址良"],"均":["平均","均匀"],"坏":["坏人","破坏"],"坐":["乘坐","共坐"],"坑":["土坑","水坑"],"块":["一块","石块"],"坚":["坚持","坚强"],"坛":["花坛","坛子"],"坝":["大坝","堤坝"],"坠":["坠落","下坠"],"坡":["山坡","坡度"],"坦":["平坦","坦克"],"坪":["草坪","坪地"],"垂":["下垂","垂柳"],"型":["模型","类型"],"垫":["垫子","坐垫"],"埋":["埋藏","埋头"],"城":["城市","城墙"],"域":["疆域","域惯"],"培":["培养","盗培"],"基":["基础","基地"],"堂":["课堂","礼堂"],"堆":["土堆","一堆"],"堡":["城堡","堡垒"],"堤":["大堤","海堤"],"堪":["难堪","不堪"],"堵":["堵塞","堵犹"],"塌":["一塌糊涂","崩塌"],"塔":["宝塔","高塔"],"塘":["池塘","荷塘"],"塞":["塞外","堵塞"],"填":["填写","填空"],"境":["境界","环境"],"墙":["墙壁","围墙"],"增":["增加","增缝"],"墨":["墨水","水墨"],"壁":["墙壁","峭壁"],"士":["战士","博士"],"壮":["强壮","雄壮"],"声":["声音","大声"],"壳":["贝壳","外壳"],"壶":["水壶","茶壶"],"处":["好处","到处"],"备":["装备","备等"],"夏":["夏除","亚夏"],"夕":["夕李","细夕"],"外":["外国","课外"],"多":["很多","多少"],"夜":["夜晚","深夜"],"够":["够猜","所够"],"大":["大家","扩大"],"天":["今天","天空"],"太":["太阳","太多"],"夫":["夫终","商夫"],"央":["中央","央求"],"失":["失去","失败"],"头":["木头","低头"],"夸":["夸奖","夸大"],"夹":["夹袄","夹夸"],"夺":["掠夺","争夺"],"奇":["奇妙","好奇"],"奈":["奈何","奈巢"],"奉":["奉献","奉命"],"奋":["奋斗","振奋"],"奏":["演奏","奏乐"],"奔":["奔跑","奔波"],"奖":["奖金","奖杯"],"套":["一套","套住"],"奥":["奥秘","奥运"],"女":["女生","女儿"],"奶":["牛奶","奶奶"],"她":["她医","病她"],"如":["如果","如此"],"妆":["化妆","妆容"],"妇":["妇女","媳妇"],"妈":["妈妈","干妈"],"妒":["嫉妒","妒忌"],"妖":["妖怪","妖精"],"妙":["奇妙","美妙"],"妨":["妨碍","无妨"],"妹":["妹妹","姐妹"],"妻":["妻子","夫妻"],"姆":["保姆","姆妈"],"始":["开始","始令"],"姐":["姐妹","姐您"],"姑":["姑姑","姑娘"],"姓":["姓名","百姓"],"委":["委托","委员"],"姨":["阿姨","姨妈"],"姿":["姿势","姿态"],"威":["权威","威武"],"娃":["娃娃","女娃"],"娇":["娇气","娇嫩"],"娘":["姑娘","新娘"],"娶":["娶妻","迎娶"],"婆":["婆婆","外婆"],"婚":["结婚","婚礼"],"婴":["婴儿","婴孩"],"婶":["婶婶","大婶"],"媚":["明媚","妩媚"],"媳":["媳妇","儿媳"],"嫂":["嫂辆","爹嫂"],"嫌":["嫌朱","鹤嫌"],"嫩":["嫩绿","幼嫩"],"嬴":["嬴拳","嬴字"],"子":["孩子","子女"],"孔":["孔曰","孔雀"],"字":["文字","汉字"],"存":["存在","存约"],"孙":["孙膑","孙泊"],"季":["四季","冬季"],"孤":["孤独","孤单"],"孩":["孩子","男孩"],"孵":["孵警","绩孵"],"宁":["辽宁","宁官"],"它":["它们","其它"],"宅":["宅临","宅字"],"宇":["宇宙","星宇"],"守":["驻守","守株"],"安":["安全","安眠"],"宋":["宋耕","待宋"],"完":["完成","完全"],"宏":["宏大","宏伟"],"官":["五官","器官"],"宙":["宇宙","时间宇宙"],"定":["确定","决定"],"宜":["宜鹤","宜字"],"宝":["珍宝","宝贝"],"实":["真实","实际"],"审":["审剂","绷审"],"客":["客人","旅客"],"宣":["宣布","宣传"],"室":["寝室","室交"],"宫":["迷宫","宫殿"],"宰":["宰相丞","宰措"],"害":["伤害","危害"],"宴":["宴霉","寞宴"],"宵":["宵燃","眨宵"],"家":["家乡","国家"],"容":["容易","澡容"],"宽":["宽广","加宽"],"宾":["宾盏","府宾"],"宿":["宿舍","宿徐"],"寂":["寂静悄","寂寞"],"寄":["寄信","寄托"],"密":["秘密","密集"],"寇":["寇副","寇字"],"富":["丰富","富颗"],"寒":["寒冷","寒假"],"寞":["寂寞","孤寞"],"察":["洞察","监察"],"寨":["山寨","寨子"],"寸":["寸柔","梨寸"],"寺":["寺畔","愁寺"],"寻":["寻找","寻求"],"导":["领导","诱导"],"寿":["寿苏","醒寿"],"封":["密封","封面"],"射":["射击","射门"],"将":["将难","第将"],"尊":["尊重","尊敬"],"小":["小心","大小"],"少":["多少","少年"],"尔":["尔沾","偶尔"],"尖":["尖锐","笔尖"],"尘":["灰尘","尘埃"],"尚":["尚犹","尚氧"],"尝":["尝诸","戎尝"],"尤":["尤恨","椅尤"],"就":["就寝","就爪"],"尸":["尸慌","敌尸"],"尺":["直尺","尺子"],"尼":["迪士尼","尼斯"],"尽":["尽力","用尽"],"尾":["尾巴","首尾"],"局":["僵局","局堆"],"屁":["屁股","屁字"],"层":["层峦叠嶂","层照"],"居":["居住","邻居"],"屈":["屈辱","委屈"],"屉":["趴屉","屉字"],"屋":["房屋","小屋"],"屏":["屏障","屏蹭"],"屑":["不屑","木屑"],"展":["展开","展览"],"履":["履行","鞋履"],"山":["高山","山地"],"屹":["屹立","屹然"],"岁":["年岁","几岁"],"岂":["诵岂","岂字"],"岗":["岗宰","秩岗"],"岛":["岛屿","半岛"],"岩":["岩挺","错岩"],"岭":["山岭","翻越山岭"],"岳":["岳摩","仞岳"],"岸":["岸屋","论岸"],"峡":["峡族","岛峡"],"峰":["高峰","山峰"],"峻":["险峻","严峻"],"崇":["崇拜","崇高"],"崖":["悬崖","山崖"],"崩":["崩溃","崩塌"],"崭":["崭衷","吭崭"],"嵌":["镶嵌","嵌框"],"巍":["巍然屹立","巍弦"],"川":["川直","挂川"],"州":["荆州","州华"],"巢":["鸟巢","蜂巢"],"工":["工人","打工"],"左":["左边","左手"],"巧":["伶巧","巧克"],"巨":["巨真","些巨"],"巫":["涕巫","巫字"],"差":["差别","差距"],"已":["已经","不已"],"巴":["下巴","嘴巴"],"巾":["手巾","头巾"],"币":["币与","钱币"],"市":["城市","市场"],"布":["棉布","宣布"],"帅":["帅预","恨帅"],"帆":["扬帆","帆船"],"师":["师军","伍师"],"希":["希望","婴希"],"帐":["帐篷","蚊帐"],"帘":["窗帘","门帘"],"帝":["帝传","帝曰"],"带":["带来","领带"],"席":["苇席","席糖"],"帮":["帮助","帮忙"],"常":["经常","平常"],"帽":["帽桅","肆帽"],"幅":["篇幅","幅评"],"幕":["幕愈","漆幕"],"干":["干妈","干什么"],"平":["和平","平常"],"年":["年级","年龄"],"并":["并且","合并"],"幸":["幸婶","总幸"],"幻":["幻想","虚幻"],"幼":["幼嫩","幼搏"],"幽":["幽雅","窥幽"],"广":["广场","广告"],"庄":["庄严","庄园"],"庆":["国庆","庆诊"],"床":["起床","床铺"],"序":["循序","序投"],"庐":["庐山","草庐"],"库":["刮库","库字"],"应":["应该","应用"],"底":["底杆","柱底"],"店":["店铺","店决"],"庙":["庙威","接庙"],"府":["府宾","政府"],"庞":["庞量","搏庞"],"废":["废弃","废旧"],"度":["角度","速度"],"座":["座右铭","座室"],"庭":["庭登","司庭"],"康":["健康","康胞"],"庸":["平庸","中庸"],"延":["延迟","蔓延"],"建":["建设","建立"],"开":["打开","开始"],"异":["异乡","奇异"],"弃":["放弃","抛弃"],"弓":["弓箭","拉弓"],"引":["引诱","引水灌溉"],"弗":["弗辩","俱弗"],"弟":["弟弟","兄弟"],"张":["张开","紧张"],"弦":["弦锦","巍弦"],"弯":["弯曲","弯腰"],"弱":["薄弱","软弱"],"弹":["弹琴","子弹"],"强":["强壮","强烈"],"归":["归还","归戴"],"当":["当然","当时"],"录":["记录","录保"],"形":["圆形","矩形"],"彩":["彩色","精彩"],"彭":["彭拟","彭字"],"影":["影响","电影"],"彻":["彻迁","彻字"],"彼":["彼贺","贩彼"],"往":["以往","来往"],"征":["征伐","征词"],"径":["小径","直径"],"待":["拭目以待","待宋"],"很":["很多","很好"],"徊":["徘徊","踌徊"],"律":["法律","规律"],"徐":["徐徐","徐缓"],"徒":["徒扔","旱徒"],"得":["得到","觉得"],"徘":["徘徊","往徘"],"御":["抵御","防御"],"微":["微笑","细微"],"德":["德鹊","德字"],"心":["开心","用心"],"必":["必须","必需"],"忆":["记忆","回忆"],"忌":["忌讳","禁忌"],"忍":["忍耐","忍受"],"志":["志愿","励志"],"忘":["忘记","遗忘"],"忙":["帮忙","忙碌"],"忠":["忠臣","忠毒"],"忧":["忧虑","忧字"],"快":["快乐","快速"],"念":["思念","悬念"],"忽":["忽然","忽视"],"怀":["胸怀","怀抱"],"态":["态吨","隧态"],"怎":["怎布","编怎"],"怒":["恼怒","怒瞪"],"怔":["捏怔","怔字"],"怕":["怕跟","吓怕"],"怜":["怜饿","裙怜"],"思":["思考","反思"],"怡":["怡逸","旷怡"],"急":["着急","急救"],"性":["惰性","悟性"],"怨":["抱怨","怨恨"],"怪":["治怪","怪字"],"怯":["怯拒","罪怯"],"总":["总是","总共"],"恃":["依恃","有恃无恐"],"恋":["恋舍","景恋"],"恍":["恍怨","襟恍"],"恐":["恐惧","有恃无恐"],"恢":["恢踢","罐恢"],"恨":["嫉恨","怨恨"],"恩":["恩赐","恩泽"],"恭":["恭勤","萤恭"],"息":["休息","消息"],"恰":["恰襟","蕾恰"],"恶":["恶劣","恶蟋"],"悄":["悄悄","悄声"],"悉":["悉坠","拖悉"],"悔":["悔扶","延悔"],"悠":["悠闲","悠扬"],"悦":["喜悦","愉悦"],"您":["您好","请您"],"悬":["悬挂","悬念"],"悲":["悲啼","悲惨"],"情":["感情","心情"],"惊":["惊喜","惊叫"],"惑":["迷惑","困惑"],"惜":["珍惜","可惜"],"惠":["惠崇","鸯惠"],"惧":["恐惧","畏惧"],"惨":["惨兽","悲惨"],"惩":["惩罚","惩戒"],"惯":["习惯","惯例"],"惰":["懒惰","惰性"],"想":["梦想","幻想"],"惶":["惶吻","搓惶"],"惹":["惹昏","概惹"],"愁":["愁寺","泊愁"],"愈":["愈旷","幕愈"],"愉":["愉悦","愉曾"],"意":["注意","意思"],"感":["感情","感动"],"愣":["量愣","愣字"],"愤":["愤获","著愤"],"愿":["意愿","心愿"],"慈":["慈祥","衷慈"],"慌":["尸慌","慌字"],"慎":["谨慎","慎选"],"慕":["慕矮","榨慕"],"慢":["缓慢","慢慢"],"慧":["聪慧","智慧"],"慨":["感慨","慷慨"],"慰":["欣慰","慰藉"],"慷":["慷慨","慷慨解囊"],"憎":["庸憎","憎字"],"懂":["懂兰","懂字"],"懒":["懒惰","偷懒"],"懦":["懦弱","虚懦"],"戎":["戎尝","戎字"],"戏":["游戏","戏剧"],"成":["成功","完成"],"我":["我们","自我"],"戒":["惩戒","戒歪"],"或":["或者","男或"],"战":["战争","战颤"],"戚":["戚贩","燃戚"],"截":["截止","截断"],"戴":["佩戴","戴辛"],"户":["户主","家户"],"房":["房间","房屋"],"所":["场所","所以"],"扁":["一叶扁舟","扁担"],"扇":["扇子","扇风"],"手":["握手","手机"],"才":["人才","刚才"],"扎":["扎实","扎根"],"扑":["迎扑","扑字"],"扒":["扒敌","绸扒"],"打":["打球","打扫"],"扔":["扔掉","抛扔"],"托":["嘱托","委托"],"扣":["扣子","扣押"],"执":["押执","执字"],"扩":["扩大","扩范"],"扫":["打扫","扫地"],"扬":["表扬","飞扬"],"扭":["扭炕","晋扭"],"扮":["打扮","装扮"],"扯":["拉扯","扯断"],"扳":["扳腕","挠扳"],"扶":["悔扶","扶字"],"批":["批评","批准"],"找":["寻找","查找"],"承":["承认","继承"],"技":["技改","纪技"],"抄":["誊抄","抄罪"],"抑":["抑制","压抑"],"抓":["抓紧","抓吵"],"投":["投入","投票"],"抖":["颤抖","抖动"],"抗":["抗环","违抗"],"折":["曲折","折叠"],"抛":["抛扔","抛弃"],"抡":["抡贯","弹抡"],"抢":["抢嘻","页抢"],"护":["保护","看护"],"报":["汇报","报另"],"披":["披轻","夜披"],"抬":["抬烦","续抬"],"抱":["拥抱","怀抱"],"抵":["抵御","抵袭"],"抹":["涂抹","抹去"],"押":["押韵","扣押"],"抽":["抽出","抽取"],"拂":["吹拂","拂晓"],"担":["担志","扁担"],"拆":["颊拆","拆字"],"拇":["拇搔","拇字"],"拉":["拉扯","拉弓"],"拌":["拌筝","摊拌"],"拍":["拍手","拍照"],"拐":["陷拐","拐字"],"拒":["拒荆","怯拒"],"拔":["拔瞎","榆拔"],"拖":["拖拉","拖欠"],"拘":["哀拘","拘字"],"拙":["拙帘","案拙"],"招":["招手","招生"],"拜":["崇拜","拜访"],"拟":["拟谋","彭拟"],"拢":["合拢","拢住"],"拥":["拥抱","拥有"],"拦":["拦水坝","拦恶"],"拧":["拧螺","轧拧"],"拨":["拨打","拨开"],"择":["择址","选择"],"括":["括检","跨括"],"拭":["擦拭","拭泪"],"拱":["拱辉","估拱"],"拳":["拳擦","嬴拳"],"拴":["拴瓢","承拴"],"拼":["拼命","拼音"],"拽":["拽福","丫拽"],"拾":["捡拾","拾起"],"拿":["拿并","及拿"],"持":["坚持","支持"],"挂":["悬挂","挂川"],"指":["指导","手指"],"按":["按摩","按钮"],"挑":["挑落","送挑"],"挖":["挖撤","亏挖"],"挠":["挠扳","欺挠"],"挡":["遮挡","挡视"],"挣":["挣番","渗挣"],"挤":["拥挤","挤叉"],"挥":["挥镰","叉挥"],"挨":["挨打","挨近"],"挪":["挪动","挪移"],"振":["振动","振奋"],"挺":["昂首挺胸","挺刺"],"挽":["挽留","挽救"],"捉":["捕捉","捉迷藏"],"捏":["捏怔","傻捏"],"捕":["捕捉","哦捕"],"捞":["捞阿","验捞"],"损":["损失","损坏"],"捡":["捡起","拾捡"],"换":["交换","更换"],"捧":["捧代","讶捧"],"据":["根据","依据"],"捶":["捶绕","跪捶"],"捷":["捷径","捷昂"],"掀":["掀起","掀开"],"掉":["掉落","丢掉"],"掌":["掌声","鼓掌"],"掏":["掏赛","摘掏"],"掐":["凭掐","掐字"],"排":["排列","排队"],"掘":["掘伏","汤掘"],"掠":["掠过","掠夺"],"探":["探愉","耐探"],"接":["接受","连接"],"控":["操控","遥控"],"推":["推动","推进"],"掩":["掩埋","掩护"],"措":["措遣","宰措"],"掷":["投掷","掷出"],"揉":["揉搓","揉眼"],"描":["描写","描述"],"提":["提出","提高"],"插":["插花","插队"],"握":["握手","把握"],"揪":["揪出","揪住"],"揭":["揭斑","倾揭"],"援":["援助","支援"],"搁":["搁置","搁浅"],"搂":["搂抱","搂住"],"搅":["搅稠","匙搅"],"搏":["搏斗","拼搏"],"搓":["搓手","搓球"],"搔":["搔痒","拇搔"],"搜":["搜蚯","蕊搜"],"搞":["搞殊","赴搞"],"搬":["搬倒","卖搬"],"搭":["搭亲","搭字"],"摄":["摄氏","摄字"],"摆":["摆动","摆放"],"摇":["摇动","摇头"],"摊":["摊拌","饺摊"],"摔":["摔倒","摔跤"],"摘":["摘掏","蓝摘"],"摩":["摩擦","按摩"],"摸":["摸甚","摸字"],"撑":["支撑","撑开"],"撒":["撒缚","羞撒"],"撕":["撕逗","桅撕"],"撞":["碰撞","撞饱"],"撤":["撤退","撤销"],"播":["播种","广播"],"撵":["撵烫","乖撵"],"擂":["擂鼓","擂台"],"操":["体操","操场"],"擦":["擦拭","摩擦"],"攀":["攀爬","攀登巅峰"],"支":["支持","支撑"],"收":["收获","收到"],"改":["改正","改造"],"攻":["攻伐","攻克"],"放":["开放","放学"],"政":["政策","政治"],"故":["故事","故乡"],"效":["奏效","效率"],"敌":["敌尸","扒敌"],"敏":["敏锐","敏捷"],"救":["救援","救助"],"教":["教学","教游"],"敢":["勇敢","果敢"],"散":["散步","分散"],"敬":["尊敬","敬重"],"数":["无数","数枚"],"敲":["敲锤","敲鸣"],"整":["整齐","整理"],"文":["文字","语文"],"斑":["斑燥","揭斑"],"斗":["斗争","战斗"],"料":["材料","原料"],"斜":["倾斜","斜坡"],"斤":["斤俺","碟斤"],"斥":["训斥","斥字"],"斧":["斧头","铁斧"],"斩":["斩限","津斩"],"断":["中断","判断"],"斯":["斯艇","尼斯"],"新":["新朋友","新芽"],"方":["方向","地方"],"施":["施吭","剂施"],"旁":["旁边","身旁"],"旅":["旅行","旅游"],"旋":["旋转","凯旋"],"族":["汉族","黎族"],"旗":["红旗","旗帜"],"无":["无法","无论"],"既":["既狠","锁既"],"日":["节日","日记"],"旧":["旧事","陈旧"],"旱":["旱徒","浮旱"],"时":["时间","有时"],"旷":["旷怡","愈旷"],"旺":["旺盛","旺旁"],"昂":["高昂","昂贵"],"昆":["昆虫","昆修"],"昏":["昏握","惹昏"],"易":["易浴","容易"],"星":["星星","明星"],"映":["晖映","映欣"],"春":["春天","青春"],"昨":["昨天","昨晚"],"是":["不是","也是"],"昼":["昼耘","昼字"],"显":["显材","坛显"],"晃":["晃动","晃悠"],"晋":["晋扭","晋字"],"晌":["晌辣","划晌"],"晒":["晒太阳","曝晒"],"晓":["拂晓","桑晓"],"晕":["头晕","晕倒"],"晚":["晚上","晚饭"],"晨":["清晨","早晨"],"普":["普模","剑普"],"景":["风景","景色"],"晰":["晰振","默晰"],"晴":["晴天","晴朗"],"晶":["水晶","晶莹"],"智":["智慧","且智"],"暇":["闲暇","无暇"],"暑":["暑噪","酷暑"],"暖":["温暖","暖和"],"暗":["黑暗","暗恐"],"暮":["暮吟","暮字"],"暴":["暴风","暴雨"],"曝":["曝晒","曝矣"],"曰":["子曰","孔曰"],"曲":["歌曲","曲调"],"更":["更加","更好"],"曹":["曹操","曹营"],"曾":["曾经","未曾"],"替":["代替","替换"],"最":["痛最","最字"],"月":["月亮","岁月"],"有":["没有","拥有"],"朋":["朋友","好朋友"],"服":["衣服","服务"],"朗":["晴朗","爽朗"],"望":["希望","望远"],"朝":["朝阳","朝代"],"期":["期末","换期"],"朦":["朦胧","朦朦"],"木":["树木","木头"],"未":["未来","未曾"],"末":["末尾","末了"],"本":["课本","日本"],"术":["武术","术斗"],"朱":["朱嵌","嫌朱"],"朴":["朴素","朴实"],"朵":["花朵","耳朵"],"机":["飞机","机会"],"杀":["杀菌","区杀"],"杂":["杂稀","杂字"],"权":["权威","版权"],"杆":["杆子","旗杆"],"杉":["杉化","棉杉"],"李":["李语","夕李"],"杏":["杏花","杏子"],"材":["材料","素材"],"村":["农村","村庄"],"杖":["杖申","榜杖"],"杜":["杜绝","杜鹃"],"束":["约束","结束"],"条":["条件","一条蚯蚓"],"来":["回来","未来"],"杨":["白杨","杨树"],"杭":["杭亥","熏杭"],"杯":["茶杯","奖杯"],"杰":["杰出","英杰"],"松":["放松","松树"],"板":["板富","伸板"],"极":["北极","积极"],"构":["结构","建构"],"枕":["枕头","枕木"],"枚":["一枚","枚举"],"果":["水果","结果"],"枝":["树枝","枝叶"],"枣":["枣咽","腻枣"],"枪":["枪耐","硬枪"],"枫":["枫叶","枫树"],"枯":["枯却","朗枯"],"架":["骼架","架胶"],"柄":["柄萎","茎柄"],"柏":["松柏","柏树"],"某":["朴某","某字"],"染":["染色","感染"],"柔":["温柔","柔软"],"柜":["书柜","柜子"],"查":["检查","调查"],"柱":["柱底","称柱"],"柳":["杨柳","柳树"],"柴":["砍柴","柴旧"],"标":["标帜","标牺"],"栋":["栋梯","密栋"],"栏":["栏汇","盏栏"],"树":["大树","植树"],"栓":["栓胳","哩栓"],"栖":["栖息","栖居"],"校":["学校","校园"],"株":["株待","守株"],"样":["一样","样子"],"核":["核奥","亿核"],"根":["根据","扎根"],"格":["严格","格引"],"栽":["栽梨","短栽"],"桂":["桂花","桂林"],"桃":["桃花","桃子"],"桅":["桅撕","帽桅"],"框":["框匣","嵌框"],"案":["方案","图案"],"桌":["书桌","桌子"],"桐":["桐枫","壮桐"],"桑":["桑树","桑叶"],"桥":["大桥","桥梁"],"桦":["桦涂","桦字"],"桨":["桨榕","桨字"],"桩":["桩涨","耀桩"],"桶":["水桶","桶子"],"梁":["桥梁","梁聪"],"梅":["梅花","腊梅"],"梢":["树梢","末梢"],"梦":["梦想","做梦"],"梨":["梨子","雪梨"],"梯":["梯铃","栋梯"],"械":["械酸","忍械"],"梳":["勉梳","梳字"],"检":["检查","括检"],"棉":["棉花","棉布"],"棋":["棋悬","贯棋"],"棍":["棍裁","瘩棍"],"棒":["棒罢","瘦棒"],"棕":["棕色","棕榈"],"棚":["棚子","帐棚"],"森":["森林","森拉"],"棵":["棵谢","棵字"],"椅":["椅子","木椅"],"植":["植树","植物"],"楚":["清楚","苦楚"],"楼":["楼阁","阁楼"],"概":["概惹","脱概"],"榆":["榆拔","樱榆"],"榕":["榕纠","桨榕"],"榜":["榜样","上榜"],"榨":["榨慕","亭榨"],"榴":["石榴","榴弹"],"模":["模样","模糊"],"横":["横竖","横跨"],"樱":["樱花","樱桃"],"橙":["橙色","香橙"],"橡":["橡栎","橡雕"],"檐":["屋檐","廊檐"],"欠":["欠缺","亏欠"],"次":["再次","次想"],"欢":["欢乐","喜欢"],"欣":["欣喜","欣赏"],"欧":["欧洲","阿欧"],"欲":["欲望","食欲"],"欺":["欺凌","欺侮"],"歇":["歇窝","珑歇"],"歌":["唱歌","歌声"],"止":["停止","止熄"],"正":["正确","正在"],"此":["此时","因此"],"步":["进步","散步"],"武":["武器","武术"],"歪":["歪咕","戒歪"],"歹":["歹罕","辆歹"],"死":["死亡","死气"],"殃":["殃盆","遭殃"],"殊":["殊尊","搞殊"],"残":["残缺","残忍"],"殖":["繁殖","养殖"],"段":["段落","一段"],"殷":["殷段","班殷"],"殿":["宫殿","大殿"],"毁":["毁坏","损毁"],"母":["母亲","父母"],"每":["每升","位每"],"毒":["毒绩","忠毒"],"比":["比赛","比较"],"毕":["毕煮","陪毕"],"毙":["毙抵","剔毙"],"毛":["毛笔","羽毛"],"毡":["毛毡","毡房"],"毫":["毫凌","鸽毫"],"毯":["毯玻","毯字"],"氏":["氏殖","摄氏"],"气":["天气","勇气"],"氧":["氧倾","尚氧"],"水":["洪水","水果"],"永":["永碰","导永"],"求":["求知","寻求"],"汇":["汇集","外汇"],"汉":["汉字","汉语"],"汗":["汗急","苗汗"],"汛":["汛访","汛字"],"江":["长江","江河"],"池":["水池","电池"],"汤":["汤水","鸡汤"],"汪":["汪汪","汪洋"],"汹":["汹涌","气势汹汹"],"汽":["汽车","谁汽"],"沃":["沃龄","诊沃"],"沉":["沉没","沉醉"],"沙":["沙子","沙漠"],"沟":["沟溢","曾沟"],"没":["没有","沉没"],"沫":["泡沫","泡沫塑料"],"沮":["沮丧","颓沮"],"河":["黄河","河流"],"沸":["沸腾","沸点"],"油":["柏油","油画"],"治":["治理","政治"],"沾":["沾倦","尔沾"],"沿":["沿答","观沿"],"泉":["泉破","籽泉"],"泊":["停泊","湖泊"],"法":["方法","法律"],"泛":["泛滥","泛减"],"泡":["泡沫","泡泡"],"波":["波纹","奔波"],"泣":["哭泣","泣盈"],"泥":["泥土","泥巴"],"注":["注目","注意"],"泪":["泪珠","拭泪"],"泰":["泰迫","迁泰"],"泻":["泻潜","泻字"],"泼":["活泼","瓢泼大雨"],"洁":["清洁","纯洁"],"洋":["海洋","洋气"],"洒":["洒温","背洒"],"洗":["洗手","清洗"],"洛":["洛阳","洛河"],"洞":["洞穴","山洞"],"津":["津斩","舅津"],"洲":["洲社","欧洲"],"活":["生活","活泼"],"洼":["洼填","坑洼"],"派":["派遣","派娶"],"流":["河流","流畅"],"浅":["搁浅","浅错"],"浆":["浆傅","浆字"],"浇":["浇吩","播浇"],"浊":["浊丈","缓浊"],"测":["测试","测量"],"浑":["浑圆","浑厚"],"浓":["浓雾","浓望"],"浙":["浙罗","浙字"],"浪":["浪花","海浪"],"浮":["漂浮","浮力"],"浴":["浴桶","易浴"],"海":["大海","海洋"],"浸":["浸缠","饼浸"],"涂":["涂抹","涂改"],"消":["消失","取消"],"涌":["涌出","汹涌"],"涕":["涕泪","涕零"],"涛":["波涛汹涌","波涛"],"润":["湿润","润芒"],"涧":["涧雹","沸涧"],"涨":["涨塔","桩涨"],"涯":["涯莺","涯字"],"液":["黏液","液奔"],"淋":["淋嘿","唉淋"],"淌":["淌秘","宙淌"],"淘":["淘气","淘洗"],"淡":["清淡","淡薄"],"深":["深处","深远"],"混":["混嘶","窿混"],"淹":["淹逼","妇淹"],"添":["供添","添字"],"清":["清楚","清洁"],"渐":["渐堵","逐渐"],"渔":["渔遍","飘渔"],"渗":["渗透","渗入"],"渡":["渡河","过渡"],"温":["温暖","气温"],"渴":["渴喝","答渴"],"游":["游泳","游戏"],"渺":["渺小","渺茫"],"湃":["澎湃","湃声"],"湖":["西湖","湖水"],"湾":["湾名","湾字"],"湿":["潮湿","湿润"],"溃":["崩溃","溃败"],"溅":["溅蕊","盐溅"],"溉":["灌溉","溉田"],"源":["溯源","端源"],"溜":["溜婚","托溜"],"溢":["沟溢","溢字"],"溪":["溪泛","梅溪"],"溺":["溺返","曰溺"],"滋":["茂滋","滋字"],"滑":["滑冰","光滑"],"滚":["滚顿","盼滚"],"满":["满意","充满"],"滥":["泛滥","滥用"],"滨":["滨灰","滨字"],"滩":["沙滩","滩帐"],"滴":["滴敲","器滴"],"漂":["漂流","漂亮"],"漆":["漆黑","漆幕"],"漏":["漏水","遗漏"],"演":["演出","演奏"],"漠":["沙漠","漠磁"],"漫":["漫遨","漫灭"],"漾":["荡漾","漾削"],"潇":["潇穗","绣潇"],"潜":["潜试","泻潜"],"潮":["浪潮","热潮"],"澄":["澄萍","综澄"],"澎":["澎湃","澎湖"],"澡":["泡澡","澡容"],"激":["激动","激烈"],"瀑":["瀑增","蔗瀑"],"灌":["灌溉","引水灌溉"],"火":["火车","篝火"],"灭":["熄灭","灭藤"],"灯":["电灯","路灯"],"灰":["灰尘","灰色"],"灵":["灵活","心灵"],"灶":["灶需","防灶"],"灿":["灿煌","灿骑"],"炉":["熔炉","炉烟"],"炊":["炊烟","炊葬"],"炎":["炎热","炎害"],"炒":["炒饭","蛋炒"],"炕":["热炕","睡炕"],"炭":["煤炭","炭区"],"炮":["鞭炮","炮穿"],"炸":["爆炸","炸字"],"点":["蜻蜓点水","点评"],"炼":["锻炼","熔炼"],"烁":["烁蝙","帐烁"],"烂":["烂替","刹烂"],"烈":["猛烈","强烈"],"烛":["烛伸","蜡烛"],"烟":["炊烟","烟雾"],"烤":["烧烤","烤火"],"烦":["烦恼","烦躁"],"烧":["烧烤","焚烧"],"烫":["烫丫","撵烫"],"热":["热情","热闹"],"焚":["焚烧","焚香"],"焦":["焦誓","塌焦"],"焰":["焰刚","斗焰"],"然":["自然","当然"],"煌":["辉煌","灿煌"],"煤":["煤炭","煤气"],"照":["照片","照顾"],"煮":["煮枕","毕煮"],"熄":["熄灭","熄火"],"熊":["熊猫","六熊"],"熏":["熏杭","乃熏"],"熟":["稻熟","熟字"],"熬":["熬粥","熬夜"],"燃":["燃戚","宵燃"],"燕":["燕子","春燕"],"燥":["燥漠","斑燥"],"爆":["爆炸","荣爆"],"爪":["爪神","就爪"],"爬":["攀爬","爬山"],"爱":["热爱","可爱"],"父":["父亲","祖父"],"爷":["爷爷","老爷"],"爸":["爸爸","好爸爸"],"爹":["爹妈","老爹"],"爽":["凉爽","爽快"],"片":["照片","一片"],"版":["出版","版本"],"牌":["铜牌","盾牌"],"牙":["牙用","马牙"],"牛":["牛奶","水牛"],"牢":["牢固","监牢"],"牧":["牧场","放牧"],"物":["动物","植物"],"牲":["牲畜","踢牲"],"牵":["牵鹅","淘牵"],"特":["特别","特积"],"牺":["牺炊","标牺"],"犯":["犯馅","圣犯"],"状":["状狐","状字"],"犹":["犹豫","犹如"],"狂":["疯狂","狂风"],"狐":["狐狸","状狐"],"狗":["闪狗","狗字"],"狠":["狠著","既狠"],"独":["独自","独立"],"狭":["狭勉","拾狭"],"狮":["狮追","哎狮"],"狸":["狸腰","狐狸"],"狼":["狼藉","狼莫"],"猎":["猎人","狩猎"],"猛":["猛烈","猛接"],"猜":["猜测","猜扬"],"猪":["活猪","猪字"],"猫":["小猫","猫咪"],"猬":["刺猬","小刺猬"],"献":["奉献","献诺"],"猴":["猴念","攀猴"],"率":["效率","速率"],"玉":["白玉","玉米"],"王":["国王","王子"],"玩":["好玩","玩具"],"环":["耳环","环境"],"现":["发现","出现"],"玲":["玲珑","秀玲"],"玻":["玻璃","玻璃杯"],"珍":["珍贵","珍惜"],"珑":["珑歇","玲珑"],"珠":["珍珠","水珠"],"班":["班级","上班"],"球":["地球","球类"],"理":["道理","理解"],"琐":["琐朴","刊琐"],"琴":["弹琴","琴感"],"瑞":["祥瑞","瑞雪"],"璃":["玻璃","琉璃"],"瓜":["西瓜","南瓜"],"瓢":["水瓢","瓢虫"],"瓣":["瓣蓬","瓣字"],"瓦":["砖瓦","瓦片"],"瓶":["瓶挤","瓶字"],"甘":["心甘情愿肯","甘甜"],"甚":["甚至","甚跪"],"甜":["甜蜜","甜菜"],"生":["学生","生活"],"用":["使用","用处"],"甩":["甩嚷","喧甩"],"田":["农田","田野"],"由":["自由","由慢到快"],"甲":["甲虫","指甲"],"申":["申兼","杖申"],"电":["电话","停电"],"男":["男生","男孩"],"画":["图画","画画"],"界":["世界","边界"],"畔":["寺畔","畔字"],"留":["停留","残留"],"畜":["牲畜","畜字"],"略":["侵略","策略"],"番":["番茄","番埋"],"疆":["边疆","无疆"],"疏":["疏散","疏茅"],"疑":["疑问","疑惑"],"疗":["菌疗","疗字"],"疙":["疙瘩","凛疙"],"疤":["疤监","腮疤"],"疯":["疯狂","发疯"],"疲":["疲倦","疲累"],"疼":["疼席","考疼"],"疾":["疾病","疾风"],"病":["生病","疾病"],"痒":["痒秽","搔痒"],"痕":["纤痕","痕字"],"痛":["腰痛","痛最"],"瘦":["瘦棒","葵瘦"],"瘩":["瘩棍","疙瘩"],"登":["登高远眺","攀登巅峰"],"白":["白色","明白"],"百":["百花","百姓"],"皂":["皂剩","皂字"],"皇":["皇履","胎皇"],"皎":["皎章","侯皎"],"皮":["皮肤","树皮"],"皱":["皱纹","皱眉"],"盆":["盂盆","盆勃"],"盈":["盈脉","泣盈"],"益":["益联","奥益"],"盏":["盏栏","宾盏"],"盐":["盐溅","圃盐"],"监":["监督","监察"],"盒":["盒颜","盒字"],"盖":["覆盖","盖子"],"盗":["盗培","素盗"],"盘":["银盘","盘字"],"盛":["盛开","旺盛"],"目":["题目","注目"],"盯":["盯言","想盯"],"盲":["盲纯","茵盲"],"直":["直接","笔直"],"相":["互相","相信"],"盼":["盼滚","阔盼"],"盾":["矛盾","盾牌"],"省":["省略","省县"],"眉":["眉毛","眉头"],"看":["看书","看法"],"真":["认真","真正"],"眠":["睡眠","安眠"],"眨":["眨宵","筝眨"],"眷":["眷赴","炼眷"],"眺":["眺望","远眺"],"眼":["眼睛","眼神"],"着":["跟着","看着"],"睁":["睁翻","睁字"],"睛":["眼睛","目不转睛"],"睡":["睡觉","睡眠"],"督":["督促","监督"],"睹":["目睹","有目共睹"],"瞄":["鸥瞄","瞄字"],"瞅":["瞅靴","僻瞅"],"瞎":["瞎铲","拔瞎"],"瞧":["瞧固","萎瞧"],"瞪":["瞪眼","怒瞪"],"瞬":["瞬间","一瞬"],"矛":["矛盾","长矛"],"矣":["矣哉","呜呼矣"],"知":["知道","知识"],"矩":["规矩","矩形"],"短":["短栽","蚁短"],"矮":["矮谈","慕矮"],"石":["宝石","钻石"],"矿":["矿石","金矿"],"码":["号码","哗码"],"砌":["砌牌","允砌"],"砍":["砍伐","砍柴"],"研":["研究","研发"],"砖":["砖头","红砖"],"破":["突破","破坏"],"砸":["砸碎","砸坏"],"硕":["硕允","硕字"],"硬":["僵硬","硬枪"],"确":["确实","正确"],"碌":["忙碌","碌吊"],"碎":["砸碎","碎拨"],"碗":["饭碗","碗筷"],"碟":["碟斤","饥碟"],"碧":["碧绿","碧玉"],"碰":["碰到","碰撞"],"碳":["碳钢","蔬碳"],"磁":["磁素","漠磁"],"磨":["磨遥","未磨"],"示":["指示","示昆"],"礼":["礼拜","认礼"],"社":["洲社","社字"],"祖":["祖国","祖父"],"祝":["祝扎","张祝"],"神":["精神","神话"],"祥":["祥瑞","吉祥如瑞"],"票":["投票","票争"],"祭":["祭祀","祭奠"],"祷":["祷雇","姆祷"],"禁":["禁忌","禁惩"],"福":["福舔","拽福"],"离":["离开","距离"],"禽":["诣禽","禽字"],"禾":["禾苗","禾穗"],"秀":["优秀","秀丽"],"私":["私颊","啸私"],"秋":["秋天","金秋"],"种":["各种","种类"],"科":["妇科","科横"],"秒":["秒腿","骑秒"],"秘":["秘密","淌秘"],"租":["租厨","拜租"],"秤":["秤砣","杆秤"],"秦":["秦征","塞秦"],"秧":["秧苗","插秧"],"秩":["秩岗","维秩"],"积":["积极","积累"],"称":["称呼","称赞"],"移":["挪移","移额"],"秽":["秽轧","痒秽"],"稀":["稀少","稀奇"],"程":["路程","程超"],"稍":["稍微","腐稍"],"稚":["稚避","稚字"],"稠":["黏稠","稠肿"],"稳":["稳衡","惰稳"],"稻":["水稻","稻谷"],"稼":["庄稼禾","稼俗"],"稿":["稿腔","蹭稿"],"穗":["稻穗","麦穗"],"穴":["洞穴","巢穴"],"究":["研究","究达"],"穷":["穷荷","莲穷"],"空":["天空","空气"],"穿":["穿越","穿衣"],"突":["冲突","突破"],"窄":["窄郁","鹃窄"],"窗":["窗户","窗口"],"窜":["俐窜","窜字"],"窝":["捅马蜂窝","窝滑"],"窟":["窟窿","石窟"],"窥":["窥幽","缀窥"],"窿":["窟窿","窿洞"],"立":["建立","站立"],"竖":["横竖","竖绳"],"站":["站立","站船"],"竞":["竞争","竞赛"],"竟":["竟乃","竟哇"],"章":["盖章","豫章"],"童":["儿童","童年"],"竭":["竭累","撑竭"],"端":["极端","端源"],"竹":["竹子","翠竹"],"竿":["钓竿","竿腾"],"笋":["笋端","乳笋"],"笑":["欢笑","笑话"],"笔":["笔尖","毛笔"],"笛":["竹笛","笛声"],"符":["符欲","符字"],"笨":["笨钝","笨字"],"第":["第一","第二"],"笼":["笼赖","翁笼"],"等":["等暴","备等"],"筋":["筋骨","脑筋"],"筑":["建筑","筑堡"],"筒":["圆筒","竹筒"],"答":["回答","答案"],"策":["对策","政策"],"筝":["筝眨","拌筝"],"筷":["碗筷","脏筷"],"筹":["筹橡","裁筹"],"签":["签名","签字"],"简":["简单","简朴"],"算":["算夹","货算"],"管":["尽管","管乎"],"箩":["箩婆","兰箩"],"箭":["弓箭","箭头"],"箱":["箱臭","拥箱"],"篇":["篇章","一篇"],"篮":["篮球","竹篮"],"篱":["篱笆","篱墙"],"篷":["帐篷","篷缩"],"簇":["簇哗","雇簇"],"籍":["籍聊","霉籍"],"米":["大米","玉米"],"类":["种类","球类"],"籽":["籽泉","倒籽"],"粉":["白粉","粉色"],"粒":["颗粒","米粒"],"粗":["粗心","粗壮"],"粘":["粘偏","胶粘"],"粥":["米粥","喝粥"],"粮":["粮食","储粮"],"精":["精神","精力"],"糊":["糊涂","模糊"],"糕":["糕饼","婆糕"],"糖":["糖屑","席糖"],"糟":["糟嘛","嘿糟"],"系":["关系","系列"],"素":["素质","素材"],"索":["渡索","索字"],"紧":["紧张","紧密"],"紫":["紫仅","镶紫"],"累":["疲累","积累"],"繁":["繁多","繁荣"],"纠":["纠耀","榕纠"],"红":["红旗","红色"],"纤":["纤痕","闲纤"],"约":["节约","约束"],"级":["班级","年级"],"纪":["世纪","纪技"],"纯":["纯洁","纯粹"],"纱":["纱妻","罕纱"],"纳":["接纳","出纳"],"纵":["纵横","放纵"],"纷":["难纷","纷字"],"纸":["纸张","书纸"],"纹":["花纹","波纹"],"纺":["纺织","抽纺"],"纽":["纽扣","螺纽"],"线":["绒线","视线"],"练":["练习","训练"],"组":["建组","组字"],"细":["仔细","细心"],"织":["织编","纺织"],"终":["终完","夫终"],"绊":["绊绞","叨绊"],"绍":["绍妖","介绍"],"经":["已经","经过"],"绑":["捆绑","绑啃"],"绒":["绒毛","天鹅绒"],"结":["结果","结合"],"绕":["围绕","绕顽"],"绘":["描绘","绘画"],"给":["给予","送给"],"络":["网络","脉络"],"绝":["绝对","绝妙"],"绞":["绞耽","绊绞"],"统":["统一","传统"],"绣":["刺绣","绣潇"],"继":["继续","继承"],"绩":["绩孵","毒绩"],"绪":["情绪","思绪"],"续":["连续","持续"],"绰":["协绰","绰字"],"绳":["跳绳","缆绳"],"维":["维秩","嘶维"],"绵":["连绵","绵延"],"绷":["绷审","匪绷"],"绸":["丝绸","绸扒"],"综":["综合","错综"],"绽":["绽沫","揉绽"],"绿":["绿色","翠绿"],"缀":["缀窥","缀字"],"缓":["迟缓","缓慢"],"缕":["缕陶","键缕"],"编":["编怎","织编"],"缘":["缘分","边缘"],"缚":["缚猬","撒缚"],"缝":["缝合","缝隙"],"缠":["缠茶","浸缠"],"缩":["缩小","收缩"],"缸":["缸脏","褐缸"],"缺":["残缺","欠缺"],"罐":["罐恢","铛罐"],"网":["上网","网络"],"罕":["罕见","稀罕"],"罗":["罗杜","浙罗"],"罚":["惩罚","处罚"],"罢":["欲罢","棒罢"],"罩":["罩竟","脊罩"],"罪":["罪怯","抄罪"],"置":["搁置","圈置"],"羊":["绵羊","羊毛"],"美":["美丽","美好"],"羞":["羞耻","羞撒"],"群":["一群","群体"],"羽":["羽毛","羽绒"],"翁":["翁笼","檐翁"],"翅":["翅膀","羽翅"],"翘":["翘垫","艄翘"],"翠":["翡翠","苍翠"],"翻":["翻转","翻越"],"翼":["翅翼","翼展"],"耀":["荣耀","耀桩"],"老":["古老","老爷"],"考":["思考","参考"],"者":["者冻","或者"],"而":["而且","继而"],"耍":["玩耍","耍喊"],"耐":["忍耐","耐探"],"耕":["耕地","耕种"],"耘":["耘桑","昼耘"],"耳":["耳朵","木耳"],"耸":["耸踏","率耸"],"耻":["耻辱","羞耻"],"耽":["耽揉","绞耽"],"聊":["聊乏","籍聊"],"职":["职屏","贪职"],"联":["联合","联连"],"聚":["聚拢","聚形"],"聪":["聪明","聪慧"],"肃":["严肃","肃静"],"肆":["肆帽","航肆"],"肉":["牛肉","鱼肉"],"肚":["肚子","肚皮"],"肠":["肠继","克肠"],"股":["股净","屁股"],"肢":["胳肢","肢翼"],"肥":["肥胖","肥农"],"肩":["肩膀","肩臀"],"肯":["肯定","肯干"],"肿":["肿熬","稠肿"],"胀":["胀裂","蓬胀"],"胃":["胃管","扫胃"],"胆":["胆理","表胆"],"背":["背包","背诵"],"胎":["双胞胎","胎皇"],"胖":["胖子","肥胖"],"胜":["胜凯","胜迹"],"胞":["双胞胎","胞疾"],"胡":["胡须","胡涂乱抹"],"胧":["朦胧","胧明"],"胳":["胳膊","胳肢窝"],"胶":["胶粘","架胶"],"胸":["胸口","胸怀"],"能":["能力","可能"],"脂":["脂肪","油脂"],"脆":["脆拦","脆字"],"脉":["脉搏","山脉"],"脊":["脊罩","噪脊"],"脏":["脾脏","脏筷"],"脑":["大脑","脑子"],"脖":["脖颈","脖脱"],"脚":["脚印","膑脚"],"脱":["摆脱","脱落"],"脸":["脸面","笑脸"],"脾":["脾气","脾脏"],"腊":["腊月","腊梅"],"腐":["豆腐","腐稍"],"腔":["腔解","稿腔"],"腕":["腕剃","扳腕"],"腮":["腮疤","剃腮"],"腰":["弯腰","腰部"],"腹":["腹剖","伦腹"],"腻":["腻枣","粥腻"],"腾":["腾飞","奔腾"],"腿":["腿凶","秒腿"],"膀":["翅膀","肩膀"],"膊":["胳膊","赤膊"],"膛":["膛截","坠膛"],"膝":["膝涛","萝膝"],"膨":["膨肢","颅膨"],"臀":["臀移","肩臀"],"臂":["手臂","臂膀"],"臣":["大臣","忠臣"],"臭":["臭蔬","箱臭"],"至":["至于","至今"],"致":["致敬","雅致"],"舅":["舅津","舅字"],"舌":["舌点","还舌"],"舍":["舍不得","舍弃"],"舒":["舒适","舒展"],"舔":["舔葵","福舔"],"舞":["舞蹈","跳舞"],"舟":["小舟","龙舟"],"航":["航行","航空"],"般":["般精","苹般"],"舱":["舱鸥","咧舱"],"船":["船只","轮船"],"艄":["艄翘","纵艄"],"艇":["艇纵","斯艇"],"艘":["艘航","艘字"],"良":["善良","优良"],"艰":["艰弓","类艰"],"色":["颜色","景色"],"艳":["鲜艳","艳丽"],"艺":["综艺","责艺"],"艾":["艾敬","舟艾"],"节":["节日","节约"],"芒":["芒果","光芒"],"芙":["芙蓉","芙蓉花"],"芝":["芝圣","障芝"],"芦":["芦苇","芦芽"],"芬":["芬芳","芬字"],"花":["花朵","开花"],"芳":["芳内","芬芳"],"芽":["发芽","嫩芽"],"苍":["苍白","苍茫"],"苏":["苏强","寿苏"],"苔":["苔藓","棚苔"],"苗":["禾苗","秧苗"],"苟":["一丝不苟","苟譬"],"若":["若透","悠若"],"苦":["苦苦","辛苦"],"英":["英尺","英雄"],"苹":["苹果","苹般"],"茂":["茂盛","茂滋"],"范":["范围","范努"],"茄":["茄子","番茄"],"茅":["茅檐","疏茅"],"茎":["茎柄","隙茎"],"茫":["茫然","迷茫"],"茵":["茵盲","菜茵"],"茶":["茶杯","茶匙"],"茸":["毛茸茸","嫩茸"],"荆":["荆棘","荆条"],"草":["草地","草原"],"荐":["策荐","荐字"],"荒":["荒野","荒废"],"荡":["荡秋千","荡漾"],"荣":["荣誉","光荣"],"药":["药合","充药"],"荷":["荷花","荷叶"],"莫":["莫非","莫名"],"莲":["荷莲","莲花"],"获":["获得","收获"],"莹":["晶莹","萤莹"],"莺":["涯莺","莺字"],"菇":["蘑菇","菇字"],"菊":["菊花","秋菊"],"菌":["霉菌","菌疗"],"菜":["菜刀","菠菜"],"萄":["葡萄","葡萄园"],"萍":["萍漾","澄萍"],"萎":["萎瞧","柄萎"],"萝":["萝卜","胡萝卜"],"萤":["萤莹","萤恭"],"落":["脱落","掉落"],"著":["著愤","狠著"],"葛":["葛述","凯葛"],"葡":["葡萄","葡萄干"],"葫":["葫爽","浪葫"],"葬":["炊葬","葬字"],"葵":["葵瘦","舔葵"],"蒙":["启蒙","蒙古"],"蒜":["蒜酱","嚷蒜"],"蒲":["蒲英","蒲字"],"蒸":["蒸裸","徊蒸"],"蓉":["芙蓉","蓉城"],"蓝":["茄蓝","湛蓝"],"蓬":["蓬松","蓬勃"],"蔗":["蔗瀑","坪蔗"],"蔬":["蔬碳","臭蔬"],"蔼":["蔼资","篮蔼"],"蔽":["蒙蔽","遮蔽"],"蕊":["蕊搜","溅蕊"],"蕾":["蕾恰","糊蕾"],"薄":["薄雾","单薄"],"藉":["狼藉","慰藉"],"藏":["捉迷藏","埋藏"],"藓":["藓坪","苔藓"],"藤":["藤蔓","葡萄藤"],"蘑":["蘑菇","爽蘑"],"虎":["虎啸","虎操"],"虑":["顾虑","虑贪"],"虚":["虚心","虚假"],"虫":["昆虫","害虫"],"虹":["彩虹","天虹"],"虽":["虽鬼","倍虽"],"虾":["虾米","对虾"],"蚁":["蚁短","蚂蚁"],"蚂":["蚂蚁","勇蚂"],"蚊":["蚊蝇","蚊帐"],"蚓":["蚯蚓","蚓虫"],"蚕":["蚕丝","蚕考"],"蚯":["蚯蚓","蚯蚓土"],"蚱":["蚱嗡","蝴蚱"],"蛇":["蛇遭","闷蛇"],"蛋":["鸡蛋","蛋炒"],"蛙":["青蛙","蛙泳"],"蛛":["蜘蛛","蛛网"],"蜂":["蜜蜂","蜂蜜"],"蜓":["蜻蜓","蜓翼"],"蜘":["蜘蛛","大蜘蛛"],"蜜":["蜜蜂","甜蜜"],"蜡":["蜡烛","简蜡"],"蜻":["蜻蜓","蜻蜓点水"],"蝇":["苍蝇","蝇头"],"蝉":["鹊蝉","蝉字"],"蝙":["蝙蝠","蝙蝠洞"],"蝠":["蝙蝠","蝠鲼"],"蝴":["蝴蝶","彩色蝴蝶"],"蝶":["蝴蝶","蝶舞"],"融":["融合","融化"],"螺":["螺旋","螺纽"],"蟀":["蟋蟀","蟀虫"],"蟋":["蟋蟀","斗蟋蟀"],"血":["血腥","血仍"],"行":["旅行","行动"],"衔":["衔接","口衔"],"街":["街道","大街"],"衡":["衡协","稳衡"],"补":["补偿","补充"],"表":["表扬","表演"],"衫":["衫负","衬衫"],"衬":["衬衫","务衬"],"衰":["衰刊","贾衰"],"衷":["衷慈","崭衷"],"袋":["袋严","脑袋"],"袍":["旗袍","长袍"],"袖":["袖子","衣袖"],"被":["被子","被迫"],"袭":["袭击","偷袭"],"袱":["袱障","傅袱"],"裁":["裁剪","裁判"],"裂":["山崩地裂","裂缝"],"装":["服装","装备"],"裙":["裙怜","旧裙"],"裤":["裤逃","套裤"],"裳":["裳虹","璃裳"],"裸":["裸露","裸体"],"裹":["裹篮","莹裹"],"褐":["褐色","棕褐"],"襟":["襟恍","恰襟"],"西":["大西洋","西湖"],"要":["主要","重要"],"覆":["覆盖","覆没"],"见":["看见","意见"],"观":["旁观","观沿"],"规":["规则","法规"],"视":["视野","视线"],"览":["游览","展览"],"觉":["感觉","觉得"],"角":["角度","三角"],"解":["了解","解答"],"触":["接触","触颈"],"言":["语言","发言"],"誉":["荣誉","名誉"],"誓":["誓言","发誓"],"警":["警戒","孵警"],"譬":["譬喻","譬侍"],"计":["诡计","计史"],"认":["认识","认真"],"讨":["讨论","讨厌"],"让":["逊让","让包"],"训":["训练","训斥"],"议":["协议","议缺"],"记":["日记","笔记"],"讲":["演讲","讲课"],"讶":["讶捧","尘讶"],"许":["许多","也许"],"论":["无论","争论"],"设":["假设","建设"],"访":["访问","拜访"],"证":["保证","证研"],"评":["评价","评论"],"识":["知识","认识"],"诈":["诈傻","堪诈"],"诉":["鸣诉","诉字"],"诊":["诊沃","庆诊"],"词":["词催","征词"],"试":["测试","试胎"],"诗":["诗歌","古诗"],"诚":["真诚","诚实"],"话":["说话","电话"],"诣":["诣禽","聪诣"],"该":["应该","该伯"],"详":["测详","详字"],"语":["语文","外语"],"误":["误途","确误"],"诱":["诱惑","引诱"],"诲":["诲谓","耻诲"],"说":["说话","小说"],"诵":["朗诵","背诵"],"请":["邀请","请问"],"诸":["诸位","诸多"],"诺":["承诺","诺言"],"读":["阅读","朗读"],"课":["课本","讲课"],"谁":["谁汽","候谁"],"调":["调整","协调"],"谈":["矮谈","谈字"],"谊":["谊齐","族谊"],"谋":["谋划","阴谋"],"谎":["谎延","誓谎"],"谐":["和谐","谐寄"],"谓":["谓诵","诲谓"],"谚":["谚语","俗谚"],"谜":["谜尚","谜字"],"谢":["感谢","道谢"],"谦":["谦逊","谦虚"],"谱":["谱菜","谱字"],"谷":["山谷","谷物"],"豆":["大豆","绿豆"],"豌":["豌按","豌字"],"象":["印象","象都"],"豪":["豪迈","豪华"],"豹":["豹子","猎豹"],"貌":["貌仓","扣貌"],"贝":["宝贝","贝壳"],"负":["负责","衫负"],"贡":["贡滥","慨贡"],"财":["钱财","财购"],"责":["责艺","负责"],"败":["失败","失败输"],"货":["货算","卷货"],"质":["品质","素质"],"贩":["贩彼","戚贩"],"贪":["贪职","虑贪"],"贫":["贫逢","博贫"],"购":["购买","采购"],"贯":["贯棋","抡贯"],"贴":["体贴","张贴"],"贵":["珍贵","高贵"],"贷":["贷剔","控贷"],"费":["费脑筋","费须"],"贺":["贺轿","彼贺"],"贼":["贼狼","驴贼"],"贾":["贾衰","述贾"],"资":["投资","资矿"],"赏":["欣赏","赏赐"],"赖":["倚赖","赖剥"],"赛":["比赛","赛跑"],"赞":["称赞","赞叹"],"赠":["赠送","馈赠"],"赤":["赤裸","赤圈"],"走":["走路","行走"],"赴":["赴任","赴约"],"赵":["赵省","赵字"],"赶":["赶旺","唱赶"],"起":["起来","起床"],"趁":["趁碧","童趁"],"超":["超越","超亿"],"越":["越来越","超越"],"趟":["趟托","妻趟"],"趣":["兴趣","有趣"],"足":["足球","满足"],"趴":["趴屉","丧趴"],"跃":["跳跃","飞跃"],"跌":["跌倒","跌落"],"跑":["跑步","逃跑"],"距":["差距","距离"],"跟":["跟着","跟起"],"跤":["摔跤","跌跤"],"跨":["跨越","横跨"],"跪":["跪捶","甚跪"],"路":["道路","马路"],"跳":["跳跃","跳舞"],"践":["遣践","践字"],"跺":["跺颓","雕跺"],"踏":["踏实","踏青"],"踢":["踢牲","恢踢"],"踩":["踩洁","除踩"],"踪":["踪啸","惩踪"],"蹄":["蹄腐","虹蹄"],"蹈":["舞蹈","蹈海"],"蹦":["蹦跳","蹦蹦"],"蹭":["蹭稿","屏蹭"],"蹲":["蹲凤","饰蹲"],"身":["身体","出身"],"躯":["躯掩","齿躯"],"躲":["涛躲","躲字"],"躺":["躺下","躺卧"],"车":["汽车","火车"],"轧":["轧拧","秽轧"],"转":["目不转睛","翻转"],"轮":["轮流","车轮"],"软":["柔软","软件"],"轰":["轰堪","馅轰"],"轻":["轻松","年轻"],"载":["载靠","躺载"],"轿":["轿骆","贺轿"],"较":["比较","卫较"],"辆":["辆歹","嫂辆"],"辈":["辈分","前辈"],"辉":["辉煌","光辉"],"输":["运输","失败输"],"辛":["辛勤","辛劳"],"辞":["辞抑","辞字"],"辟":["翼辟","辟字"],"辣":["辣椒","辣味"],"辨":["辨别","辨认"],"辩":["辩论","争辩"],"辫":["辫呵","念辫"],"边":["左边","右边"],"辽":["辽阔","辽远"],"达":["到达","达驾"],"迁":["迁泰","彻迁"],"迅":["迅速","推迅"],"过":["经过","过来"],"迈":["迈步","豪迈"],"迎":["欢迎","迎接"],"运":["运动","运气"],"近":["附近","靠近"],"返":["返衔","溺返"],"还":["还是","还有"],"这":["这么","这呀"],"进":["进入","前进"],"远":["遥远","远大"],"违":["违反","违背"],"连":["连接","联连"],"迟":["迟到","延迟"],"迪":["启迪","迪士尼"],"迫":["被迫","胁迫"],"述":["叙述","描述"],"迷":["迷路","迷宫"],"迹":["锈迹","迹央"],"追":["追寻","追忆"],"退":["退缩","退却"],"送":["送给","赠送"],"适":["合适","舒适"],"逃":["逃跑","逃亏"],"选":["选择","慎选"],"逊":["谦逊","逊色"],"透":["透明","渗透"],"逐":["逐渐","顿逐"],"递":["递员","邮递"],"途":["旅途","途陌"],"逗":["逗唬","撕逗"],"通":["通畅","通俗"],"逛":["瓢逛","逛字"],"速":["速度","快速"],"造":["建造","改造"],"逢":["贫逢","逢字"],"逸":["骏逸","逸免"],"逼":["逼浮","淹逼"],"遇":["遇到","机遇"],"遍":["遍躺","渔遍"],"道":["知道","跑道"],"遗":["遗忘","遗弃"],"遣":["派遣","消遣"],"遥":["遥远","遥望"],"遭":["遭殃","蛇遭"],"遮":["遮住","遮蔽"],"避":["避峻","稚避"],"邓":["邓植","邓字"],"那":["那里","那么"],"邮":["邮件","邮递"],"邻":["邻居","邻治"],"郁":["郁肩","窄郁"],"郊":["郊外","城郊"],"郎":["郎爹","郎字"],"郑":["郑拜","郑字"],"部":["全部","部分"],"都":["首都","象都"],"配":["配合","配哎"],"酒":["酒醉","葡萄酒"],"酬":["酬珍","酬字"],"酱":["酱唇","蒜酱"],"酷":["酷热","残酷"],"酸":["硫酸","酸权"],"醉":["沉醉","陶醉"],"醋":["醋饺","醋字"],"醒":["醒寿","内醒"],"采":["采用","采集"],"释":["解释","释放"],"里":["里面","心里"],"重":["重要","重量"],"野":["田野","荒野"],"量":["重量","份量"],"金":["黄金","金色"],"针":["扎针","针帮"],"钉":["钉陪","迪钉"],"钓":["钓鱼","垂钓"],"钝":["钝鸽","笨钝"],"钟":["分钟","钟丁"],"钢":["炼钢","钢盔"],"钩":["钩子","鱼钩"],"钱":["金钱","钱财"],"钻":["钻研","钻石"],"铁":["锻铁","铁斧"],"铃":["铃乘","梯铃"],"铅":["铅晃","炕铅"],"铛":["铛罐","吆铛"],"铜":["青铜","铜牌"],"铲":["铲锄","瞎铲"],"银":["银盘","遥银"],"铺":["铺路","店铺"],"链":["链颤","级链"],"销":["撤销","销奉"],"锁":["锁既","环锁"],"锄":["锄草","锄头"],"锅":["砸锅","锅字"],"锋":["锋芒","锋昨"],"锐":["锐利","尖锐"],"错":["弄错","错综"],"锤":["铁锤","锤子"],"锦":["锦曝","弦锦"],"键":["键缕","纯键"],"锻":["锻炼","锻造"],"镇":["武镇","镇字"],"镜":["镜未","初镜"],"镶":["镶嵌","镶边"],"长":["生长","长大"],"门":["大门","专门"],"闪":["闪辉","闪狗"],"闭":["封闭","闭脸"],"闯":["闯统","唐闯"],"闲":["悠闲","空闲"],"间":["时间","中间"],"闷":["烦闷","闷热"],"闹":["热闹","嬉闹"],"闻":["听闻","新闻"],"阅":["阅读","阅制"],"阔":["宽阔","广阔"],"队":["队伍","排队"],"防":["防灾","防洪堤"],"阳":["太阳","阳光"],"阴":["阴谋","阴似"],"阵":["一阵","阵雨"],"阶":["台阶","阶段"],"阻":["阻跨","辨阻"],"阿":["阿欧","捞阿"],"附":["附近","附脾"],"际":["实际","话际"],"陆":["陆乳","额陆"],"陌":["途陌","陌字"],"降":["下降","降低"],"限":["界限","限凯"],"陡":["掷陡","陡字"],"院":["医院","院墙"],"除":["除了","除草"],"险":["危险","险峻"],"陪":["陪毕","钉陪"],"陵":["丘陵","陵览"],"陶":["陶醉","缕陶"],"陷":["陷拐","蔽陷"],"隆":["隆射","距隆"],"随":["随蹈","佛随"],"隐":["隐健","钢隐"],"隔":["隔懒","挽隔"],"隙":["缝隙","隙茎"],"障":["障碍","屏障"],"隧":["隧态","描隧"],"难":["难忘","灾难"],"雀":["雀粗","孔雀"],"雁":["壶雁","雁字"],"雄":["英雄","雄壮"],"雅":["高雅","文雅"],"集":["集中","集体"],"雇":["雇簇","祷雇"],"雕":["雕塑","雕跺"],"雨":["下雨","暴雨"],"雪":["下雪","白雪"],"零":["涕零","凋零"],"雷":["雷乌","雷字"],"雹":["雹屹","涧雹"],"雾":["大雾","迷雾"],"需":["需要","必需"],"震":["震惊","震霎"],"霉":["发霉","倒霉"],"霎":["霎时","一霎那"],"霜":["霜赠","斜霜"],"霞":["朝霞","晚霞"],"露":["露水","雨露"],"霸":["横行霸道","霸鹰"],"青":["青年","青草"],"静":["安静","平静"],"非":["非常","莫非"],"靠":["靠近","倚靠"],"面":["面前","面对"],"革":["签革","革字"],"靴":["靴魔","瞅靴"],"鞋":["鞋子","皮鞋"],"鞭":["鞭炮","鞭打"],"音":["音乐","读音"],"韵":["韵律","韵味"],"页":["页抢","哈页"],"顶":["山顶","顶部"],"项":["雄项","项字"],"顺":["一帆风顺","顺均"],"须":["必须","胡须"],"顽":["顽脖","绕顽"],"顾":["照顾","顾虑"],"顿":["顿时","一顿饭"],"预":["预兆","预溃"],"颅":["颅膨","吨颅"],"领":["带领","领导"],"颇":["颇为","颇多"],"颈":["脖颈","颈椎"],"颊":["颊拆","私颊"],"颓":["颓沮","跺颓"],"颗":["一颗","颗粒"],"题":["题目","问题"],"颜":["颜色","颜料"],"额":["额陆","移额"],"颤":["颤抖","颤动"],"风":["台风","风景"],"飘":["飘渔","灰飘"],"飞":["飞机","起飞"],"食":["食物","粮食"],"餐":["餐划","拭餐"],"饥":["饥碟","冈饥"],"饭":["吃饭","晚饭"],"饮":["饮食","饮初"],"饰":["饰蹲","构饰"],"饱":["饱满","饱晒"],"饶":["丰饶","饶恕"],"饺":["饺摊","醋饺"],"饼":["柿饼","饼浸"],"饿":["挨饿","饿简"],"馅":["馅轰","犯馅"],"馆":["馆附","侍馆"],"首":["第一首","首先"],"香":["香味","清香"],"马":["赛马","马路"],"驰":["驰骋","飞驰"],"驴":["驴贼","胖驴"],"驶":["驾驶","驶字"],"驼":["骆驼","驼背"],"驾":["驾驶","达驾"],"骂":["咒骂","骂仇"],"骄":["骄傲","骄横"],"骆":["骆驼","骆驼队"],"验":["验捞","约验"],"骏":["骏马","骏逸"],"骑":["骑车","骑秒"],"骗":["骗灌","饶骗"],"骤":["骤掷","凝骤"],"骨":["骨头","骨气"],"高":["高山","升高"],"鬼":["鬼泡","虽鬼"],"魂":["灵魂","魂魄"],"魔":["魔刑","靴魔"],"鱼":["金鱼","钓鱼"],"鲁":["鲁遮","委鲁"],"鲜":["鲜艳","鲜荔枝"],"鸟":["小鸟","候鸟"],"鸡":["小鸡","鸡蛋"],"鸣":["鸣叫","鸣谢"],"鸥":["鸥瞄","舱鸥"],"鸦":["栖鸦","鸦字"],"鸭":["鸭肉","烤鸭"],"鸯":["鸳鸯","鸯鸟"],"鸳":["鸳鸯","鸳鸯锅"],"鸽":["鸽毫","钝鸽"],"鹃":["鹃窄","杜鹃"],"鹅":["天鹅绒","鹅卵"],"鹊":["鹊蝉","德鹊"],"鹤":["鹤嫌","宜鹤"],"鹰":["老鹰","雄鹰"],"鹿":["鹿塘","鹿字"],"麦":["麦穗","麦该"],"麻":["麻勇","虾麻"],"黄":["黄金","黄土"],"黎":["黎明","黎族"],"黑":["黑色","黑暗"],"默":["沉默","默写"],"鼓":["鼓励","打鼓"],"鼠":["鼠秀","鼠字"],"鼻":["鼻涕","鼻抖"],"齐":["整齐","齐奋"],"齿":["齿躯","巢齿"],"龄":["年龄","龄匪"],"龙":["龙舟","龙虾"]};
+function getHintWords(item){
+  const words=WORD_HINTS_DRAFT[item.c]||[];
+  return words.slice(0,2);
+}
+
+function speak(item){
+  if(!item||!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  const words=getHintWords(item);
+  const hint=words.length?`。组词：${words.join('，')}。`:'。';
+  const u=new SpeechSynthesisUtterance(`请写：${item.c}${hint}`);
+  u.lang='zh-CN';u.rate=.70;u.pitch=1.0;
+  const voices=window.speechSynthesis.getVoices().filter(v=>/^zh/.test(v.lang));
+  if(voices.length)u.voice=voices[0];
+  window.speechSynthesis.speak(u);
+}
+function Home(){
+  const wrap=el('div');
+  const stats=el('div','stats');
+  const learned=Object.keys(S.done).length;
+  const wrongN=Object.keys(S.wrong).length;
+  [[totalCount(),'总字数'],[lessonCount(),'课次'],[learned,'已练字次'],[wrongN,'生字本']].forEach(([n,l])=>{const s=el('div','stat',`<div class="stat-n">${n}</div><div class="stat-l">${l}</div>`);stats.appendChild(s);});
+  const statCard=el('div','card');statCard.appendChild(stats);wrap.appendChild(statCard);
+  wrap.appendChild(RewardCard());
+
+  if(wrongN>0){
+    const wordbookCard=el('div','card');
+    const wrongItems=Object.values(S.wrong);
+    wordbookCard.appendChild(action('生字本练习',`${wrongItems.length} 字 · 复练加入生字本的字`,wrongItems,'生字本练习','clay'));
+    wrap.appendChild(wordbookCard);
+  }
+
+  const gCard=el('div','card');gCard.innerHTML='<div class="section-title">🎓 1. 选择年级</div>';
+  const gg=el('div','grid');DATA.forEach((g,gi)=>{const b=el('button','tab'+(S.g===gi?' sel':''),g.label);b.onclick=()=>{S.g=gi;S.v=null;render();};gg.appendChild(b);});gCard.appendChild(gg);wrap.appendChild(gCard);
+
+  if(S.g!==null){
+    const g=DATA[S.g];
+    const gradeItems=makeItems(S.g,null,null);
+    const card=el('div','card');
+    card.innerHTML=`<div class="section-title">🧩 2. ${g.label}练习</div><div class="note">先可做全年级综合，也可以继续选择上册或下册。</div>`;
+    card.appendChild(action(`${g.label}综合听写`,`${gradeItems.length} 字 · 上册 + 下册`,gradeItems,`${g.label}综合听写`,'primary'));
+    const vt=el('div','grid');
+    g.vols.forEach((v,vi)=>{const b=el('button','tab'+(S.v===vi?' sel':''),v.label);b.onclick=()=>{S.v=vi;render();};vt.appendChild(b);});
+    const label=el('div','section-title','📖 3. 选择上册 / 下册');label.style.marginTop='14px';card.appendChild(label);card.appendChild(vt);wrap.appendChild(card);
+  }
+
+  if(S.g!==null&&S.v!==null){
+    const g=DATA[S.g], v=g.vols[S.v];
+    const card=el('div','card');
+    const volItems=makeItems(S.g,S.v,null);
+    card.innerHTML=`<div class="breadcrumb">${g.label} · ${v.label}</div><div class="section-title">✏️ 4. 选择课次</div>`;
+    card.appendChild(action(`${g.label}${v.label}综合听写`,`${volItems.length} 字 · 本册全部课次`,volItems,`${g.label}${v.label}综合听写`,'blue'));
+    const list=el('div','lesson-list');
+    v.lessons.forEach((l,li)=>{list.appendChild(lessonRow(g,v,l,li));});
+    card.appendChild(list);wrap.appendChild(card);
+  }
+
+  const foot=el('div','footer-note','数据按你提供的写字表课次导入；组词提示为试用草稿，后续可继续人工校对。');wrap.appendChild(foot);
+  return wrap;
+}
+function action(title,meta,items,practiceTitle,kind='primary'){
+  const b=el('button',`action ${kind}`);
+  const p=pct(items);
+  const icon = kind==='primary' ? '⭐' : (kind==='blue' ? '📘' : '📝');
+  b.innerHTML=`<div><div class="action-title">${icon} ${safe(title)}</div><div class="action-meta">${safe(meta)} · 已练 ${p}%</div></div><div class="arrow">开始</div>`;
+  b.onclick=()=>startPractice(items,practiceTitle);return b;
+}
+function lessonRow(g,v,l,li){
+  const items=makeItems(S.g,S.v,li);const p=pct(items);
+  const r=el('button','row');
+  r.innerHTML=`<div class="row-main"><div class="row-title">📖 ${safe(l.name)}</div><div class="row-meta">${l.chars.length} 字 · 点击直接开始这一课</div></div><div class="pct">${p}%</div><div class="progress-wrap"><div class="progress-fill" style="width:${p}%"></div></div><div class="arrow">开始</div>`;
+  r.onclick=()=>startPractice(items,`${g.label}${v.label} · ${l.name}`);return r;
+}
+let ctx=null,strokeCount=0;
+function canvasSize(){return Math.min(window.innerWidth-52,330);}
+function makeCanvas(){
+  const box=el('div');const size=canvasSize();const cv=document.createElement('canvas');cv.width=size;cv.height=size;ctx=cv.getContext('2d');strokeCount=0;S.hasInk=false;
+  function grid(){ctx.fillStyle='#FFFFFF';ctx.fillRect(0,0,size,size);ctx.strokeStyle='rgba(129,117,99,.28)';ctx.lineWidth=1;ctx.setLineDash([5,6]);ctx.beginPath();ctx.moveTo(size/2,0);ctx.lineTo(size/2,size);ctx.moveTo(0,size/2);ctx.lineTo(size,size/2);ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle='rgba(129,117,99,.18)';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(size,size);ctx.moveTo(size,0);ctx.lineTo(0,size);ctx.stroke();}
+  grid();
+  let down=false,last=[0,0];
+  function pos(e){const r=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;const ratio=size/r.width;return[(t.clientX-r.left)*ratio,(t.clientY-r.top)*ratio];}
+  function start(e){e.preventDefault();down=true;last=pos(e);ctx.strokeStyle='#5D554B';ctx.lineWidth=Math.max(4,size/72);ctx.lineCap='round';ctx.lineJoin='round';}
+  function move(e){e.preventDefault();if(!down)return;const p=pos(e);ctx.beginPath();ctx.moveTo(last[0],last[1]);ctx.lineTo(p[0],p[1]);ctx.stroke();last=p;S.hasInk=true;}
+  function end(e){e.preventDefault();if(!down)return;down=false;strokeCount++;count.textContent=strokeCount+' 笔';}
+  ['mousedown','touchstart'].forEach(ev=>cv.addEventListener(ev,start,{passive:false}));
+  ['mousemove','touchmove'].forEach(ev=>cv.addEventListener(ev,move,{passive:false}));
+  ['mouseup','mouseleave','touchend','touchcancel'].forEach(ev=>cv.addEventListener(ev,end,{passive:false}));
+  box.appendChild(cv);
+  const tools=el('div','canvas-tools');const clear=el('button','small','清除');const count=el('div','tool-text','0 笔');
+  clear.onclick=()=>{grid();strokeCount=0;S.hasInk=false;count.textContent='0 笔';};
+  tools.appendChild(clear);tools.appendChild(count);box.appendChild(tools);return box;
+}
+function snap(){const cv=document.querySelector('canvas');if(!cv)return '';const o=document.createElement('canvas');o.width=120;o.height=120;const c=o.getContext('2d');c.fillStyle='#FFF';c.fillRect(0,0,120,120);c.drawImage(cv,0,0,120,120);return o.toDataURL('image/jpeg',.7);}
+function Practice(){
+  const item=S.list[S.i];
+  const wrap=el('div');
+  const top=el('div','practice-top');
+  const back=el('button','navbtn','← 返回');back.onclick=()=>{S.screen='home';S.phase='write';render();};
+  const counter=el('div','counter',`${S.i+1} / ${S.list.length} · 对 ${S.session.ok} · 错 ${S.session.bad} · 金币 ${S.coins||0}`);
+  const replay=el('button','navbtn','再听');replay.onclick=()=>speak(item);
+  top.appendChild(back);top.appendChild(counter);top.appendChild(replay);wrap.appendChild(top);
+  const bar=el('div','bar',`<div style="width:${((S.i)/S.list.length)*100}%"></div>`);wrap.appendChild(bar);
+
+  if(S.phase==='write'){
+    const card=el('div','card listen-card');
+    card.innerHTML=`<div class="prompt-title">${safe(item.grade)} · ${safe(item.vol)} · ${safe(item.lesson)} · 第 ${item.charNo} 字</div><button class="listen-btn" id="listenNow">听这个字和组词</button><div class="note" style="margin-top:12px">先听字和组词，再在下面田字格里写。</div>`;
+    wrap.appendChild(card);
+    const ccard=el('div','card canvas-card');ccard.innerHTML='<div class="canvas-note">田字格写字区</div>';ccard.appendChild(makeCanvas());wrap.appendChild(ccard);
+    const done=el('button','primary-btn','写好了，查看答案');done.onclick=()=>{if(!S.hasInk){alert('请先在田字格里写字。');return;}S.img=snap();S.phase='compare';render();};wrap.appendChild(done);
+    setTimeout(()=>{const b=document.getElementById('listenNow');if(b)b.onclick=()=>speak(item);},0);
+  } else if(S.phase==='compare'){
+    const card=el('div','card');card.innerHTML=`<div class="breadcrumb">${safe(item.grade)} · ${safe(item.vol)} · ${safe(item.lesson)}</div><div class="section-title">🔍 对比答案</div>`;
+    const grid=el('div','compare-grid');
+    const left=el('div','box');left.innerHTML='<div class="box-label">你写的</div>'+(S.img?`<img src="${S.img}" style="width:120px;height:120px;object-fit:contain;border:1px solid var(--line);border-radius:14px;background:white;margin:0 auto">`:'<div class="note">没有截图</div>');
+    const right=el('div','box',`<div class="box-label">标准字</div><div class="standard">${safe(item.c)}</div>`);
+    grid.appendChild(left);grid.appendChild(right);card.appendChild(grid);
+    const judges=el('div','judges');
+    const ok=el('button','judge ok','写对了');const bad=el('button','judge bad','加入生字本');
+    ok.onclick=()=>judge(true);bad.onclick=()=>judge(false);judges.appendChild(ok);judges.appendChild(bad);card.appendChild(judges);
+    const again=el('button','secondary-btn','不算成绩，再写一次');again.onclick=()=>{S.phase='write';S.img=null;render();setTimeout(()=>speak(item),250);};card.appendChild(again);
+    wrap.appendChild(card);
+  } else if(S.phase==='finish'){
+    const card=el('div','card');card.innerHTML=`<div class="finish-title">练习完成</div><div class="finish-sub">${safe(S.session.title)} · 共 ${S.session.total} 字</div>`;
+    const stats=el('div','stats');[[S.session.ok,'写对'],[S.session.bad,'加入生字本'],[S.session.total,'总字数'],[S.session.wrongIds.length,'本次加入'],[S.session.earned||0,'本次金币']].forEach(([n,l])=>{stats.appendChild(el('div','stat',`<div class="stat-n">${n}</div><div class="stat-l">${l}</div>`));});card.appendChild(stats);
+    const home=el('button','primary-btn','回到首页');home.style.marginTop='14px';home.onclick=()=>{S.screen='home';S.phase='write';render();};card.appendChild(home);
+    if(S.session.wrongIds.length){const retry=el('button','secondary-btn','再练本次加入');retry.onclick=()=>{const ids=new Set(S.session.wrongIds);startPractice(S.list.filter(x=>ids.has(x.id)),'本次加入复练');};card.appendChild(retry);}
+    wrap.appendChild(card);
+  }
+  return wrap;
+}
+function judge(ok){
+  const item=S.list[S.i];S.done[item.id]=Date.now();
+  S.coins=(S.coins||0)+1;
+  if(S.session)S.session.earned=(S.session.earned||0)+1;
+  if(ok){playSound('correct');S.session.ok++;delete S.wrong[item.id];}
+  else{playSound('buy');S.session.bad++;S.wrong[item.id]=item;if(!S.session.wrongIds.includes(item.id))S.session.wrongIds.push(item.id);}
+  const finished=S.i>=S.list.length-1;
+  save();
+  if(finished){S.phase='finish';setTimeout(()=>playSound('finish'),190);}
+  else{S.i++;S.phase='write';S.img=null;S.hasInk=false;}
+  render();if(S.phase==='write')setTimeout(()=>speak(S.list[S.i]),300);
+}
+function stickerById(id){return STICKERS.find(x=>x.id===id)||STICKERS[0];}
+function ownedStickerCount(){return Object.values(S.stickers||{}).reduce((a,b)=>a+(Number(b)||0),0);}
+function normalizeAlbum(){
+  if(!Array.isArray(S.album))S.album=[];
+  S.album=S.album.map((x,i)=>{
+    if(typeof x==='string'){
+      const col=i%6,row=Math.floor(i/6);
+      return {id:x,x:12+col*16,y:14+row*16,s:1,r:0,page:0};
+    }
+    return {
+      id:x.id,
+      x:Number.isFinite(x.x)?x.x:50,
+      y:Number.isFinite(x.y)?x.y:50,
+      s:Number.isFinite(x.s)?x.s:1,
+      r:Number.isFinite(x.r)?x.r:0,
+      page:Number.isFinite(x.page)?Math.max(0,Math.min(2,x.page)):0
+    };
+  }).filter(x=>x.id);
+}
+function RewardCard(){
+  const card=el('div','card');
+  card.innerHTML=`<div class="reward-head"><div><div class="section-title" style="margin-bottom:3px">🎁 领取奖励</div><div class="note">每完成一个字，得到 1 个金币。金币可以用来买更多贴纸，再自由贴进 3 张贴纸书页面。</div></div><div class="coin-pill">🪙 ${S.coins||0}</div></div>`;
+  const actions=el('div','reward-actions');
+  const shop=el('button','reward-btn sage','🛍️ 购购买贴纸');
+  shop.onclick=()=>{S.screen='shop';render();};
+  const album=el('button','reward-btn blue',`📒 贴纸书 · ${S.album.length} 张`);
+  album.onclick=()=>{S.screen='album';render();};
+  actions.appendChild(shop);actions.appendChild(album);card.appendChild(actions);
+  return card;
+}
+function Shop(){
+  const wrap=el('div');
+  const top=el('div','practice-top');
+  const back=el('button','navbtn','← 返回');back.onclick=()=>{S.screen='home';render();};
+  const title=el('div','counter',`🛍️ 购购买贴纸 · 金币 ${S.coins||0}`);
+  const album=el('button','navbtn','📒 贴纸书');album.onclick=()=>{S.screen='album';render();};
+  top.appendChild(back);top.appendChild(title);top.appendChild(album);wrap.appendChild(top);
+  const info=el('div','card');
+  info.innerHTML=`<div class="section-title">🛍️ 购买贴纸</div><div class="reward-copy">规则：每写完并判断一个字，获得 1 个金币。买到的贴纸会先进入库存，再到贴纸书里自由摆放。</div><div class="coin-pill">🪙 当前金币：${S.coins||0}</div>`;
+  wrap.appendChild(info);
+  const grid=el('div','shop-grid');
+  STICKERS.forEach(st=>{
+    const owned=S.stickers[st.id]||0;
+    const card=el('div','sticker-card');
+    card.innerHTML=`<div class="sticker-emoji">${st.emoji}</div><div class="sticker-name">${safe(st.name)}</div><div class="sticker-meta">价格 ${st.cost} 金币 · 库存 ${owned}</div>`;
+    const btn=el('button','buy-btn',S.coins>=st.cost?'购买':'金币不足');
+    btn.disabled=S.coins<st.cost;
+    btn.onclick=()=>buySticker(st.id);
+    card.appendChild(btn);grid.appendChild(card);
+  });
+  const gridCard=el('div','card');gridCard.appendChild(grid);wrap.appendChild(gridCard);
+  return wrap;
+}
+function buySticker(id){
+  const st=stickerById(id);
+  if((S.coins||0)<st.cost){alert('金币不够。继续写字可以赚金币。');return;}
+  S.coins-=st.cost;
+  S.stickers[id]=(S.stickers[id]||0)+1;
+  playSound('buy');
+  save();render();
+}
+
+function Album(){
+  normalizeAlbum();
+  if(!Number.isFinite(S.albumPage))S.albumPage=0;
+  S.albumPage=Math.max(0,Math.min(2,S.albumPage));
+  const wrap=el('div','stickerbook-shell');
+
+  const top=el('div','stickerbook-topbar');
+  const back=el('button','stickerbook-back','← 返回');
+  back.onclick=()=>{S.selectedSticker=null;S.activePlacedSticker=null;S.screen='home';render();};
+  const shop=el('button','stickerbook-shop','购购买贴纸');
+  shop.onclick=()=>{S.selectedSticker=null;S.activePlacedSticker=null;S.screen='shop';render();};
+  const coin=el('div','stickerbook-coin',`🪙 ${S.coins||0} 金币`);
+  top.appendChild(back); top.appendChild(shop); top.appendChild(coin);
+  wrap.appendChild(top);
+
+  const header=el('div','stickerbook-header');
+  header.innerHTML=`<div class="stickerbook-title">📒 贴纸书</div><div class="stickerbook-subtitle">把你赚到的贴纸放到页面上吧！一共 3 页，不同颜色，不同心情。</div>`;
+  wrap.appendChild(header);
+
+  const pager=el('div','stickerbook-pager');
+  const pageNames=['蓝色页','绿色页','黄色页'];
+  pageNames.forEach((name,idx)=>{
+    const btn=el('button','stickerbook-pagepill'+(S.albumPage===idx?' sel':''),`${name} · 第 ${idx+1}/3 页`);
+    btn.onclick=()=>{S.albumPage=idx;S.activePlacedSticker=null;render();};
+    pager.appendChild(btn);
+  });
+  wrap.appendChild(pager);
+
+  const frame=el('div','stickerbook-frame');
+  const board=el('div','album-board page-'+S.albumPage+(S.selectedSticker?' ready':''));
+  board.id='albumBoard';
+  const pageItems=S.album.map((it,idx)=>({...it,_idx:idx})).filter(it=>(it.page||0)===S.albumPage);
+  const hint=el('div','album-hint',pageItems.length?'':'请先在下面选择一张贴纸，然后点页面空白处把它放上来。');
+  board.appendChild(hint);
+
+  pageItems.forEach((it)=>{
+    const st=stickerById(it.id);
+    const holder=el('div','placed-sticker-wrap'+(S.activePlacedSticker===it._idx?' active':''));
+    holder.style.left=(it.x||50)+'%';
+    holder.style.top=(it.y||50)+'%';
+    holder.dataset.index=it._idx;
+    const face=el('span','placed-sticker-face',st.emoji);
+    holder.appendChild(face);
+    if(S.activePlacedSticker===it._idx){
+      const removeBtn=el('button','sticker-remove-btn','×');
+      removeBtn.title='拿下这张贴纸';
+      removeBtn.onclick=(e)=>{e.stopPropagation();removeStickerFromAlbum(it._idx);};
+      holder.appendChild(removeBtn);
+    }
+    makeStickerDraggable(holder,it._idx);
+    board.appendChild(holder);
+  });
+
+  board.onclick=(e)=>{
+    if(e.target.classList.contains('placed-sticker-face')||e.target.classList.contains('sticker-remove-btn')) return;
+    S.activePlacedSticker=null;
+    if(!S.selectedSticker) { render(); return; }
+    const r=board.getBoundingClientRect();
+    const x=((e.clientX-r.left)/r.width)*100;
+    const y=((e.clientY-r.top)/r.height)*100;
+    placeStickerAt(S.selectedSticker,x,y,S.albumPage);
+  };
+  frame.appendChild(board);
+  wrap.appendChild(frame);
+
+  const help=el('div','stickerbook-help',S.selectedSticker
+    ? `已选择贴纸：${stickerById(S.selectedSticker).emoji} ${safe(stickerById(S.selectedSticker).name)}。现在点上面的页面，把它放到你喜欢的位置。贴上去以后，还可以随便拖动；再点贴纸，会出现红色叉，点叉可以拿下来。`
+    : '提示：贴纸在下面。先选一张贴纸，再点上面的页面放上去；贴上去后可以随意拖动。');
+  wrap.appendChild(help);
+
+  const storage=el('div','sticker-storage');
+  storage.innerHTML=`<div class="sticker-storage-title">贴纸在这里</div><div class="sticker-storage-note">请先从这里选择贴纸，再把你的贴纸放到上面的页面上。点一下已贴贴纸，会出现红色叉；点红色叉，贴纸就会回到这里。</div>`;
+  const owned=STICKERS.filter(st=>(S.stickers[st.id]||0)>0);
+  if(!owned.length){
+    const empty=el('div','empty-state','现在这里还没有贴纸。先去购购买贴纸购买，或者继续练习写字赚金币。');
+    storage.appendChild(empty);
+  }else{
+    const grid=el('div','sticker-storage-grid');
+    owned.forEach(st=>{
+      const item=el('div','sticker-storage-item'+(S.selectedSticker===st.id?' sel':''));
+      item.innerHTML=`<div class="sticker-storage-emoji">${st.emoji}</div><div class="sticker-storage-name">${safe(st.name)}</div><div class="sticker-storage-count">剩余 ${S.stickers[st.id]||0} 张</div>`;
+      const btn=el('button','sticker-storage-btn'+(S.selectedSticker===st.id?' sel':''),S.selectedSticker===st.id?'已选中':'选择贴纸');
+      btn.onclick=()=>{S.activePlacedSticker=null;S.selectedSticker=(S.selectedSticker===st.id?null:st.id);render();};
+      item.appendChild(btn);
+      grid.appendChild(item);
+    });
+    storage.appendChild(grid);
+  }
+  wrap.appendChild(storage);
+  return wrap;
+}
+function placeStickerAt(id,x,y,page){
+  if((S.stickers[id]||0)<=0)return;
+  S.stickers[id]-=1;
+  if(S.stickers[id]<=0){delete S.stickers[id];S.selectedSticker=null;}
+  S.album.push({id,x:Math.max(4,Math.min(96,x)),y:Math.max(5,Math.min(95,y)),s:1,r:0,page:Math.max(0,Math.min(2,page||0))});
+  S.activePlacedSticker=null;
+  playSound('buy');
+  save();render();
+}
+function placeSticker(id){
+  placeStickerAt(id,50,50,S.albumPage||0);
+}
+function removeStickerFromAlbum(idx){
+  const it=S.album[idx];
+  if(!it)return;
+  S.stickers[it.id]=(S.stickers[it.id]||0)+1;
+  S.album.splice(idx,1);
+  if(S.activePlacedSticker===idx)S.activePlacedSticker=null;
+  playSound('buy');
+  save();render();
+}
+function makeStickerDraggable(node,idx){
+  let dragging=false,moved=false,startX=0,startY=0;
+  function moveTo(clientX,clientY){
+    const board=document.getElementById('albumBoard');
+    if(!board||!S.album[idx])return;
+    const r=board.getBoundingClientRect();
+    const x=((clientX-r.left)/r.width)*100;
+    const y=((clientY-r.top)/r.height)*100;
+    S.album[idx].x=Math.max(4,Math.min(96,x));
+    S.album[idx].y=Math.max(5,Math.min(95,y));
+    node.style.left=S.album[idx].x+'%';
+    node.style.top=S.album[idx].y+'%';
+  }
+  function down(e){
+    if(e.target.classList.contains('sticker-remove-btn')) return;
+    e.preventDefault();
+    const t=e.touches?e.touches[0]:e;
+    startX=t.clientX; startY=t.clientY; moved=false; dragging=true;
+  }
+  function move(e){
+    if(!dragging)return;
+    e.preventDefault();
+    const t=e.touches?e.touches[0]:e;
+    if(Math.abs(t.clientX-startX)>4||Math.abs(t.clientY-startY)>4)moved=true;
+    moveTo(t.clientX,t.clientY);
+  }
+  function up(e){
+    if(!dragging)return;
+    dragging=false;
+    if(!moved){
+      S.activePlacedSticker=(S.activePlacedSticker===idx?null:idx);
+      render();
+      return;
+    }
+    save();
+  }
+  node.addEventListener('mousedown',down,{passive:false});
+  node.addEventListener('touchstart',down,{passive:false});
+  window.addEventListener('mousemove',move,{passive:false});
+  window.addEventListener('touchmove',move,{passive:false});
+  window.addEventListener('mouseup',up);
+  window.addEventListener('touchend',up);
+}
+function render(){
+  app.innerHTML='';
+  if(S.screen==='practice')app.appendChild(Practice());
+  else if(S.screen==='shop')app.appendChild(Shop());
+  else if(S.screen==='album')app.appendChild(Album());
+  else app.appendChild(Home());
+}
+render();
+</script>
+</body>
+</html>
