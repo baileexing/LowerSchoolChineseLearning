@@ -495,15 +495,14 @@ function getHintWords(item){
 function speak(item){
   if(!item||!window.speechSynthesis)return;
   window.speechSynthesis.cancel();
-  const words=getHintWords(item);
-  const hint=words.length?`。组词：${words.join('，')}。`:'。';
-  const u=new SpeechSynthesisUtterance(`请写：${item.c}${hint}`);
+  const words=getHintWords(item).slice(0,2);
+  const parts=[item.c,...words].filter(Boolean);
+  const u=new SpeechSynthesisUtterance(`${parts.join('，')}。`);
   u.lang='zh-CN';u.rate=.70;u.pitch=1.0;
   const voices=window.speechSynthesis.getVoices().filter(v=>/^zh/.test(v.lang));
   if(voices.length)u.voice=voices[0];
   window.speechSynthesis.speak(u);
-}
-function Home(){
+}function Home(){
   const wrap=el('div');
   const stats=el('div','stats');
   const learned=Object.keys(S.done).length;
@@ -592,7 +591,7 @@ function Practice(){
 
   if(S.phase==='write'){
     const card=el('div','card listen-card');
-    card.innerHTML=`<div class="prompt-title">${safe(item.grade)} · ${safe(item.vol)} · ${safe(item.lesson)} · 第 ${item.charNo} 字</div><button class="listen-btn" id="listenNow">听这个字和组词</button><div class="note" style="margin-top:12px">先听字和组词，再在下面田字格里写。</div>`;
+    card.innerHTML=`<div class="prompt-title">${safe(item.grade)} · ${safe(item.vol)} · ${safe(item.lesson)} · 第 ${item.charNo} 字</div><button class="listen-btn" id="listenNow">再听一遍</button><div class="note" style="margin-top:12px">听清楚字和两个词语，再在下面田字格里写。</div>`;
     wrap.appendChild(card);
     const ccard=el('div','card canvas-card');ccard.innerHTML='<div class="canvas-note">田字格写字区</div>';ccard.appendChild(makeCanvas());wrap.appendChild(ccard);
     const done=el('button','primary-btn','写好了，查看答案');done.onclick=()=>{if(!S.hasInk){alert('请先在田字格里写字。');return;}S.img=snap();S.phase='compare';render();};wrap.appendChild(done);
